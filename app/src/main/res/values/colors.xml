@@ -4,4 +4,10 @@
     <color name="white">#FFFFFFFF</color>
     <color name="primaryColor">#283593</color>
     <color name="accentColor">#FFC107</color>
+
+
+    <!-- Define status bar colors based on the theme -->
+    <color name="statusBarColorLight">@android:color/white</color>
+    <color name="statusBarColorDark">@android:color/black</color>
+
 </resources>

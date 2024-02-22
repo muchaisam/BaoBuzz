@@ -1,13 +1,25 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.BaoBuzz" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <item name="colorPrimary">@color/primaryColor</item> 
+
+        <!--status bar color-->
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Customize your dark theme here. -->
+        <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorAccent">@color/accentColor</item>
-        <item name="android:fontFamily">@fonts/ga_regular</item>
+        <item name="android:fontFamily">@font/ga_regular</item>
         <item name="android:textSize">15sp</item>
         <item name="android:textColor">@color/black</item>
+        <item name="android:textColorPrimary">@color/black</item>
     </style>
 
     <style name="Theme.BaoBuzz" parent="Base.Theme.BaoBuzz" />
+    
+    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@color/statusBarColorLight</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>
