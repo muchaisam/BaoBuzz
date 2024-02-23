@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/homeFragment"
+    android:id="@+id/nav_graph">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.baobuzz.fragments.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home"/>
+
+    <fragment
+        android:id="@+id/calendarFragment"
+        android:name="com.example.baobuzz.fragments.CalendarFragment"
+        android:label="fragment_calendar"
+        tools:layout="@layout/fragment_calendar"/>
+
+    <fragment
+        android:id="@+id/statisticsFragment"
+        android:name="com.example.baobuzz.fragments.StatisticsFragment"
+        android:label="fragment_statistics"
+        tools:layout="@layout/fragment_statistics"/>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.baobuzz.fragments.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings"/>
+
+</navigation>

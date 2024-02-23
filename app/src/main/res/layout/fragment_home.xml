@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/homeFragment"
+    tools:context=".fragments.HomeFragment">
+
+
+    <!-- Greetings Text -->
+    <TextView
+        android:id="@+id/textGreetings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Good Afternoon, User!"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"/>
+
+    <!-- Profile/Settings Icon -->
+    <ImageView
+        android:id="@+id/imageProfile"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/ic_stats"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"/>
+
+<!--    horizontal card view displaying cards of popular football matches ongoing-->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textGreetings"
+        android:layout_marginTop="16dp"
+        android:scrollbars="none">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/recyclerView"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal"
+            android:scrollbars="none"/>
+
+    </HorizontalScrollView>
+
+
+</RelativeLayout>
