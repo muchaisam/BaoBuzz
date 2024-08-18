@@ -7,7 +7,7 @@
         <item name="android:windowLightStatusBar">true</item>
 
         <!-- Customize your dark theme here. -->
-        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimary">@color/primary</item>
         <item name="colorAccent">@color/accentColor</item>
         <item name="android:fontFamily">@font/ga_regular</item>
         <item name="android:textSize">15sp</item>
@@ -16,10 +16,12 @@
     </style>
 
     <style name="Theme.BaoBuzz" parent="Base.Theme.BaoBuzz" />
-    
-    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowBackground">@drawable/splash_background</item>
-        <item name="android:statusBarColor">@color/statusBarColorLight</item>
-        <item name="android:windowLightStatusBar">true</item>
+
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_background</item>
+        <item name="android:windowSplashScreenAnimationDuration">1000</item> <!-- 1 second animation -->
+        <item name="android:splashScreenTheme">@style/Theme.Material3.Light.NoActionBar</item>
     </style>
 </resources>
