@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_background</item>
+        <item name="android:windowSplashScreenAnimationDuration">1000
+        </item> <!-- 1 second animation -->
+        <item name="android:splashScreenTheme">@style/Theme.Material3.Light.NoActionBar</item>
+    </style>
+</resources>

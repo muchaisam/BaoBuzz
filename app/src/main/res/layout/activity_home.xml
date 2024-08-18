@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:fitsSystemWindows="true"
-    tools:context=".MainActivity">
+    tools:context=".HomeActivity">
 
     <androidx.fragment.app.FragmentContainerView
         android:layout_width="match_parent"

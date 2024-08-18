@@ -2,9 +2,15 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="primaryColor">#283593</color>
-    <color name="accentColor">#FFC107</color>
 
+    <color name="accentColor">#00A86B</color>
+    <color name="primary">#FFD700</color>
+    <color name="secondaryColor">#1A2F4B</color>
+    <color name="backgroundColor">#F5F5F5</color>
+    <color name="highlightColor">#FF4136</color>
+    <color name="successColor">#32CD32</color>
+    <color name="warningColor">#FFA500</color>
+    <color name="errorColor">#DC143C</color>
 
     <!-- Define status bar colors based on the theme -->
     <color name="statusBarColorLight">@android:color/white</color>
