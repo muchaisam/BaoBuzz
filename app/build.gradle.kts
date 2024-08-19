@@ -62,5 +62,16 @@ dependencies {
     //circleimageview
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
+    //Retrofit and Gson converter dependencies
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
 
+    //coil
+    implementation("io.coil-kt:coil:1.4.0")
+
+    implementation ("io.github.oshai:kotlin-logging-jvm:5.1.4")
+    implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
+
+    implementation("org.slf4j:slf4j-api:1.7.36")
 }
