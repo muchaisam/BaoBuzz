@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
+    kotlin("plugin.serialization") version "2.0.10"
 }
 
 android {
@@ -74,4 +76,19 @@ dependencies {
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
     implementation("org.slf4j:slf4j-api:1.7.36")
+
+    val room_version = "2.4.3"
+    val work_version = "2.7.1"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+
+    implementation("androidx.work:work-runtime-ktx:$work_version")
+
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    kapt("com.github.bumptech.glide:compiler:4.12.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+
 }
