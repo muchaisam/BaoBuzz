@@ -1,60 +1,138 @@
 package com.example.baobuzz.fragments
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.baobuzz.R
+import com.example.baobuzz.adapter.MatchAdapter
+import com.example.baobuzz.api.ApiClient
+import com.example.baobuzz.cache.ImageLoader
+import com.example.baobuzz.daos.AppDatabase
+import com.example.baobuzz.databinding.FragmentCalendarBinding
+import com.example.baobuzz.models.CalendarViewModel
+import com.example.baobuzz.repository.FootballRepository
+import com.google.android.material.chip.Chip
+import com.example.baobuzz.interfaces.Result
+import com.example.baobuzz.models.LeagueInfoProvider
+import com.example.baobuzz.ux.BlurredProgressDialog
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [CalendarFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class CalendarFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var binding: FragmentCalendarBinding
+    private lateinit var matchAdapter: MatchAdapter
+    private lateinit var imageLoader: ImageLoader
+    private lateinit var viewModel: CalendarViewModel
+    private lateinit var progressDialog: BlurredProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+        val repository = FootballRepository(ApiClient.footballApi, AppDatabase.getInstance(requireContext()))
+        val leagueInfoProvider = LeagueInfoProvider()
+        val factory = CalendarViewModel.Factory(repository, leagueInfoProvider)
+        viewModel = ViewModelProvider(this, factory)[CalendarViewModel::class.java]
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentCalendarBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val repository = FootballRepository(ApiClient.footballApi, AppDatabase.getInstance(requireContext()))
+        val leagueInfoProvider = LeagueInfoProvider()
+        val factory = CalendarViewModel.Factory(repository, leagueInfoProvider)
+        viewModel = ViewModelProvider(this, factory)[CalendarViewModel::class.java]
+
+        setupRecyclerView()
+        setupChips()
+        initializeComponents()
+        observeViewModel()
+    }
+
+    private fun initializeComponents() {
+        progressDialog = BlurredProgressDialog(requireContext(), R.style.CustomProgressDialogTheme)
+    }
+
+    private fun setupRecyclerView() {
+        matchAdapter = MatchAdapter()
+        binding.rvFixtures.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = matchAdapter
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_calendar, container, false)
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CalendarFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CalendarFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun setupChips() {
+        val leagueInfoList = viewModel.getLeagueInfo()
+        leagueInfoList.forEach { leagueInfo ->
+            val chip = Chip(context).apply {
+                text = leagueInfo.name
+                isCheckable = true
+                setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) {
+                        viewModel.selectLeague(leagueInfo.id)
+                    }
                 }
             }
+
+            // Load league logo
+            Glide.with(this)
+                .load(leagueInfo.flagUrl)
+                .circleCrop()
+                .into(object : CustomTarget<Drawable>(24, 24) {
+                    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                        chip.chipIcon = resource
+                    }
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        chip.chipIcon = null
+                    }
+                })
+
+            binding.chipGroup.addView(chip)
+        }
+    }
+
+
+    private fun observeViewModel() {
+        viewModel.fixtures.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is Result.Success -> {
+                    progressDialog.dismiss()
+                    matchAdapter.submitList(result.data)
+                    if (result.data.isEmpty()) {
+                        binding.tvNoMatches.visibility = View.VISIBLE
+                    } else {
+                        binding.tvNoMatches.visibility = View.GONE
+                    }
+                }
+                is Result.Error -> {
+                    progressDialog.dismiss()
+                    binding.tvError.visibility = View.VISIBLE
+                    binding.tvError.text = "Error: ${result.exception.message}"
+                }
+                is Result.Loading -> {
+                    progressDialog.show()
+                    binding.tvError.visibility = View.GONE
+                    binding.tvNoMatches.visibility = View.GONE
+                }
+            }
+        }
+
+        viewModel.selectedLeagueId.observe(viewLifecycleOwner) { leagueId ->
+            val selectedLeagueName = viewModel.getLeagueInfo().find { it.id == leagueId }?.name
+            binding.chipGroup.children.filterIsInstance<Chip>().forEach { chip ->
+                chip.isChecked = (chip.text.toString() == selectedLeagueName)
+            }
+        }
     }
 }

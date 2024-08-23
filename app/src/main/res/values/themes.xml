@@ -24,4 +24,9 @@
         <item name="android:windowSplashScreenAnimationDuration">1000</item> <!-- 1 second animation -->
         <item name="android:splashScreenTheme">@style/Theme.Material3.Light.NoActionBar</item>
     </style>
+
+    <style name="CustomProgressDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:statusBarColor">@color/white</item>
+    </style>
+
 </resources>
