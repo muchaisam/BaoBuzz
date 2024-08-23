@@ -5,11 +5,20 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvMatchDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12/12/2020"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -54,11 +63,11 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/tvScore"
+        android:id="@+id/tvMatchStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:text="1 - 1"
+        android:text="FT"
         android:textSize="16sp"
         android:textStyle="bold" />
 
