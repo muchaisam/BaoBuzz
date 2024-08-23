@@ -20,20 +20,21 @@ import kotlinx.serialization.json.Json
 import retrofit2.HttpException
 import com.example.baobuzz.interfaces.Result
 import kotlinx.serialization.encodeToString
+import java.util.TimeZone
 
 private val logger = KotlinLogging.logger {}
 
 
 class FootballRepository(private val api: FootballApi, private val db: AppDatabase) {
     private val fixtureDao = db.fixtureDao()
-    private val retryPolicy = constantDelay<Throwable>(delayMillis = 1000L) + stopAtAttempts(10)
+    private val json = Json { ignoreUnknownKeys = true }
 
     suspend fun getUpcomingFixtures(leagueId: Int, next: Int = 10): Result<List<Fixture>> {
         return withContext(Dispatchers.IO) {
             try {
                 val cachedFixtures = fixtureDao.getFixturesForLeague(leagueId)
                 if (cachedFixtures.isNotEmpty() && !isCacheExpired(cachedFixtures.first().lastUpdated)) {
-                    Result.Success(cachedFixtures.map { Json.decodeFromString(it.fixtureData) })
+                    Result.Success(cachedFixtures.map { json.decodeFromString(it.fixtureData) })
                 } else {
                     val fixtures = fetchAndCacheFixtures(leagueId, next)
                     Result.Success(fixtures)
@@ -45,27 +46,22 @@ class FootballRepository(private val api: FootballApi, private val db: AppDataba
     }
 
     private suspend fun fetchAndCacheFixtures(leagueId: Int, next: Int): List<Fixture> {
-        return retry(retryPolicy) {
-            val response = api.getUpcomingFixtures(leagueId, next, "Your_Timezone")
-            if (response.isSuccessful) {
-                val fixtures = response.body()?.response?.filter { it.fixture.status.short == "NS" } ?: emptyList()
+        val response = api.getUpcomingFixtures(leagueId, next, TimeZone.getDefault().id)
+        val fixtures = response.response.filter { it.fixture.status.short == "NS" }
 
-                fixtureDao.deleteFixturesForLeague(leagueId)
-                fixtureDao.insertFixtures(fixtures.map {
-                    CachedFixture(
-                        id = it.fixture.id,
-                        leagueId = leagueId,
-                        fixtureData = Json.encodeToString(it),
-                        lastUpdated = System.currentTimeMillis()
-                    )
-                })
+        fixtureDao.deleteFixturesForLeague(leagueId)
+        fixtureDao.insertFixtures(fixtures.map {
+            CachedFixture(
+                id = it.fixture.id,
+                leagueId = leagueId,
+                fixtureData = json.encodeToString(it),
+                lastUpdated = System.currentTimeMillis()
+            )
+        })
 
-                fixtures
-            } else {
-                throw HttpException(response)
-            }
-        }
+        return fixtures
     }
+
 
     private fun isCacheExpired(lastUpdated: Long): Boolean {
         val currentTime = System.currentTimeMillis()
