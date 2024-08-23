@@ -2,19 +2,30 @@ package com.example.baobuzz.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.bumptech.glide.Glide
 import com.example.baobuzz.R
+import com.example.baobuzz.cache.ImageLoader
 import com.example.baobuzz.databinding.ItemMatchBinding
 import com.example.baobuzz.models.Fixture
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class MatchAdapter(private var matches: List<Fixture>) :
-    RecyclerView.Adapter<MatchAdapter.ViewHolder>() {
+class MatchAdapter : ListAdapter<Fixture, MatchAdapter.ViewHolder>(FixtureDiffCallback()) {
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val binding = ItemMatchBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
+    }
 
-    inner class ViewHolder(private val binding: ItemMatchBinding) : RecyclerView.ViewHolder(binding.root) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+
+    class ViewHolder(private val binding: ItemMatchBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(fixture: Fixture) {
             binding.apply {
                 tvHomeTeam.text = fixture.teams.home.name
@@ -23,21 +34,17 @@ class MatchAdapter(private var matches: List<Fixture>) :
                 tvMatchTime.text = formatTime(fixture.fixture.date)
                 tvMatchStatus.text = fixture.fixture.status.short
 
-                // Load team logos using an image loading library like Coil
-                ivHomeTeam.load(fixture.teams.home.logo) {
-                    crossfade(true)
-                    placeholder(R.drawable.placeholder_home)
-                }
-                ivAwayTeam.load(fixture.teams.away.logo) {
-                    crossfade(true)
-                    placeholder(R.drawable.placeholder_away)
-                }
+                Glide.with(itemView.context)
+                    .load(fixture.teams.home.logo)
+                    .placeholder(R.drawable.placeholder_home)
+                    .into(ivHomeTeam)
+
+                Glide.with(itemView.context)
+                    .load(fixture.teams.away.logo)
+                    .placeholder(R.drawable.placeholder_away)
+                    .into(ivAwayTeam)
             }
-
-            binding.tvMatchDate.text = formatDate(fixture.fixture.date)
-            binding.tvMatchTime.text = formatTime(fixture.fixture.date)
         }
-
 
         private fun formatDate(dateString: String): String {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault())
@@ -54,19 +61,13 @@ class MatchAdapter(private var matches: List<Fixture>) :
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemMatchBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
-    }
+    private class FixtureDiffCallback : DiffUtil.ItemCallback<Fixture>() {
+        override fun areItemsTheSame(oldItem: Fixture, newItem: Fixture): Boolean {
+            return oldItem.fixture.id == newItem.fixture.id
+        }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(matches[position])
-    }
-
-    override fun getItemCount() = matches.size
-
-    fun updateMatches(newMatches: List<Fixture>) {
-        matches = newMatches
-        notifyDataSetChanged()
+        override fun areContentsTheSame(oldItem: Fixture, newItem: Fixture): Boolean {
+            return oldItem == newItem
+        }
     }
 }
