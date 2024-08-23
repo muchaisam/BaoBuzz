@@ -9,66 +9,44 @@ import com.example.baobuzz.repository.FootballRepository
 import kotlinx.coroutines.launch
 import com.example.baobuzz.interfaces.Result
 
-class CalendarViewModel(private val repository: FootballRepository) : ViewModel() {
-    private val _leaguesWithFixtures = MutableLiveData<Result<List<LeagueWithFixtures>>>()
-    val leaguesWithFixtures: LiveData<Result<List<LeagueWithFixtures>>> = _leaguesWithFixtures
+class CalendarViewModel(
+    private val repository: FootballRepository,
+    private val leagueInfoProvider: LeagueInfoProvider
+) : ViewModel() {
+    private val _fixtures = MutableLiveData<Result<List<Fixture>>>()
+    val fixtures: LiveData<Result<List<Fixture>>> = _fixtures
 
-    private val topFiveLeagues = listOf(39, 140, 61, 78, 135)
-    private var allLeaguesWithFixtures: List<LeagueWithFixtures> = emptyList()
+    private val _selectedLeagueId = MutableLiveData<Int>()
+    val selectedLeagueId: LiveData<Int> = _selectedLeagueId
 
+    init {
+        selectLeague(39) // EPL is selected by default
+    }
 
-    fun fetchUpcomingFixtures() {
+    fun selectLeague(leagueId: Int) {
+        _selectedLeagueId.value = leagueId
+        fetchFixtures(leagueId)
+    }
+
+    private fun fetchFixtures(leagueId: Int) {
         viewModelScope.launch {
-            _leaguesWithFixtures.value = Result.Loading
-            try {
-                allLeaguesWithFixtures = topFiveLeagues.mapNotNull { leagueId ->
-                    when (val result = repository.getUpcomingFixtures(leagueId)) {
-                        is Result.Success -> LeagueWithFixtures(
-                            id = leagueId,
-                            name = getLeagueName(leagueId),
-                            country = getLeagueCountry(leagueId),
-                            flag = getLeagueFlag(leagueId),
-                            fixtures = result.data
-                        )
-                        is Result.Error -> null
-                        Result.Loading -> TODO()
-                    }
-                }
-                if (allLeaguesWithFixtures.isEmpty()) {
-                    _leaguesWithFixtures.value = Result.Error(Exception("No data available. Please check your internet connection."))
-                } else {
-                    _leaguesWithFixtures.value = Result.Success(allLeaguesWithFixtures)
-                }
-            } catch (e: Exception) {
-                _leaguesWithFixtures.value = Result.Error(e)
-            }
+            _fixtures.value = Result.Loading
+            _fixtures.value = repository.getUpcomingFixtures(leagueId)
         }
     }
 
-    class Factory(private val repository: FootballRepository) : ViewModelProvider.Factory {
+    fun getLeagueInfo(): List<LeagueInfo> = leagueInfoProvider.getAllLeagueInfo()
+
+    class Factory(
+        private val repository: FootballRepository,
+        private val leagueInfoProvider: LeagueInfoProvider
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(CalendarViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return CalendarViewModel(repository) as T
+                return CalendarViewModel(repository, leagueInfoProvider) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
-
-
-    fun selectLeague(leagueId: Int) {
-        val selectedLeague = allLeaguesWithFixtures.find { it.id == leagueId }
-        selectedLeague?.let {
-            _leaguesWithFixtures.value = Result.Success(listOf(it))
-        }
-    }
-
-    fun selectAllLeagues() {
-        _leaguesWithFixtures.value = Result.Success(allLeaguesWithFixtures)
-    }
-
-    // Helper functions to get league details (implement these based on your data source)
-    private fun getLeagueName(leagueId: Int): String = TODO()
-    private fun getLeagueCountry(leagueId: Int): String = TODO()
-    private fun getLeagueFlag(leagueId: Int): String = TODO()
 }
