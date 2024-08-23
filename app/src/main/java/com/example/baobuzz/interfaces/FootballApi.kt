@@ -1,5 +1,6 @@
 package com.example.baobuzz.interfaces
 
+import com.example.baobuzz.models.Fixture
 import com.example.baobuzz.models.FixturesResponse
 import retrofit2.Response
 import retrofit2.http.GET
@@ -11,5 +12,9 @@ interface FootballApi {
         @Query("league") leagueId: Int,
         @Query("next") next: Int,
         @Query("timezone") timezone: String
-    ): Response<FixturesResponse>
+    ): FixturesResponse
+
+    data class FixturesResponse(
+        val response: List<Fixture>
+    )
 }
