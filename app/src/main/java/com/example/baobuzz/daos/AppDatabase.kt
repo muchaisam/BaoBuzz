@@ -8,12 +8,17 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import java.util.Date
 
-@Database(entities = [CachedFixture::class], version = 1)
+@Database(
+    entities = [CachedFixture::class],
+    version = 1,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun fixtureDao(): FixtureDao
 
     companion object {
+        @Volatile
         private var instance: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase {
@@ -31,7 +36,6 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
-
 
 class Converters {
     @TypeConverter
