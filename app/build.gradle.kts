@@ -95,5 +95,7 @@ dependencies {
     //datetime
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
+    //calendarview
+    implementation("com.kizitonwose.calendar:view:2.5.4")
 
 }
