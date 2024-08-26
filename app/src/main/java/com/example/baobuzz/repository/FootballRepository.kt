@@ -67,16 +67,20 @@ class FootballRepository(private val api: FootballApi, private val db: AppDataba
 
     private fun isCacheExpired(cachedFixtures: List<CachedFixture>): Boolean {
         val currentTime = System.currentTimeMillis()
-        val nextFixtureTime = cachedFixtures.minOfOrNull { it.fixtureDate }
+        val nextFixtureTime = cachedFixtures
+            .map { json.decodeFromString<Fixture>(it.fixtureData) }
+            .minByOrNull { it.fixture.timestamp }
+            ?.fixture
+            ?.timestamp
             ?: return true
 
         val timeUntilNextFixture = nextFixtureTime - currentTime
         val cacheLifetime = when {
-            timeUntilNextFixture < TimeUnit.HOURS.toMillis(6) -> TimeUnit.MINUTES.toMillis(15)
-            timeUntilNextFixture < TimeUnit.DAYS.toMillis(1) -> TimeUnit.HOURS.toMillis(1)
+            timeUntilNextFixture < TimeUnit.HOURS.toMillis(6) -> TimeUnit.MINUTES.toMillis(30)
+            timeUntilNextFixture < TimeUnit.DAYS.toMillis(1) -> TimeUnit.HOURS.toMillis(2)
             else -> TimeUnit.HOURS.toMillis(6)
         }
 
-        return currentTime - (cachedFixtures.maxOfOrNull { it.lastUpdated } ?: 0) > cacheLifetime
+        return currentTime - cachedFixtures.first().lastUpdated > cacheLifetime
     }
 }
