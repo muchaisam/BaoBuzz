@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:indeterminateBehavior="cycle"
-            android:indeterminateTint="@color/primary"
+            android:indeterminateTint="@color/white"
             android:indeterminateOnly="true"
             android:indeterminate="true" />
 
