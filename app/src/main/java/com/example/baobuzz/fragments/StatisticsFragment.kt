@@ -41,6 +41,14 @@ import com.example.baobuzz.models.StandingsViewModel
 import com.example.baobuzz.models.TeamStanding
 import com.example.baobuzz.repository.FootballRepository
 import com.example.baobuzz.repository.StandingsRepository
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
+import coil.compose.AsyncImage
+import com.example.baobuzz.models.LeagueStanding
+
 
 class StatisticsFragment : Fragment() {
     private lateinit var viewModel: StandingsViewModel
@@ -66,11 +74,55 @@ class StatisticsFragment : Fragment() {
     @Composable
     fun StandingsScreen(viewModel: StandingsViewModel) {
         val uiState by viewModel.uiState.collectAsState()
+        val selectedLeague by viewModel.selectedLeague.collectAsState()
 
-        when (val state = uiState) {
-            is StandingsUiState.Loading -> LoadingScreen()
-            is StandingsUiState.Success -> StandingsList(state.standings)
-            is StandingsUiState.Error -> ErrorScreen(state.message) { viewModel.retry() }
+        Column {
+            when (val state = uiState) {
+                is StandingsUiState.Loading -> LoadingScreen()
+                is StandingsUiState.Success -> {
+                    LeagueSelector(
+                        leagues = state.standings.keys.toList(),
+                        selectedLeague = selectedLeague,
+                        onLeagueSelected = { viewModel.selectLeague(it) }
+                    )
+                    StandingsList(standings = state.standings[selectedLeague])
+                }
+                is StandingsUiState.Error -> ErrorScreen(state.message) { viewModel.retry() }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun LeagueSelector(
+        leagues: List<Int>,
+        selectedLeague: Int,
+        onLeagueSelected: (Int) -> Unit
+    ) {
+        val leagueNames = mapOf(
+            39 to "Premier League",
+            140 to "La Liga",
+            61 to "Ligue 1",
+            78 to "Bundesliga",
+            135 to "Serie A"
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            leagues.forEach { leagueId ->
+                Chip(
+                    onClick = { onLeagueSelected(leagueId) },
+                    colors = ChipDefaults.chipColors(
+                        backgroundColor = if (leagueId == selectedLeague) MaterialTheme.colors.primary else MaterialTheme.colors.surface
+                    )
+                ) {
+                    Text(leagueNames[leagueId] ?: "Unknown")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+            }
         }
     }
 
@@ -100,42 +152,117 @@ class StatisticsFragment : Fragment() {
     }
 
     @Composable
-    fun StandingsList(standings: Map<Int, LeagueStandings?>) {
+    fun StandingsList(standings: LeagueStandings?) {
         LazyColumn {
-            standings.forEach { (leagueId, leagueStandings) ->
-                item {
-                    Text(
-                        text = leagueStandings?.league?.name ?: "Unknown League",
-                        style = MaterialTheme.typography.h5,
-                        modifier = Modifier.padding(16.dp)
-                    )
+            item {
+                standings?.league?.let { league ->
+                    LeagueHeader(league)
                 }
+            }
 
-                leagueStandings?.league?.standings?.firstOrNull()?.let { teamStandings ->
-                    items(teamStandings) { standing ->
-                        StandingItem(standing)
-                    }
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+            standings?.league?.standings?.firstOrNull()?.let { teamStandings ->
+                items(teamStandings) { standing ->
+                    StandingItem(standing)
                 }
             }
         }
     }
 
     @Composable
-    fun StandingItem(standing: TeamStanding) {
+    fun LeagueHeader(league: LeagueStanding) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "${standing.rank}.", modifier = Modifier.width(30.dp))
-            Text(text = standing.team.name, modifier = Modifier.weight(1f))
-            Text(text = "${standing.points} pts", modifier = Modifier.width(50.dp))
+            AsyncImage(
+                model = league.logo,
+                contentDescription = "League logo",
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = league.name,
+                style = MaterialTheme.typography.h5
+            )
         }
+    }
+
+    @Composable
+    fun StandingItem(standing: TeamStanding) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            elevation = 4.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${standing.rank}.",
+                    modifier = Modifier.width(30.dp),
+                    style = MaterialTheme.typography.body2
+                )
+                AsyncImage(
+                    model = standing.team.logo,
+                    contentDescription = "Team logo",
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = abbreviateTeamName(standing.team.name),
+                    modifier = Modifier.width(100.dp),
+                    style = MaterialTheme.typography.body2
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                StandingStats(standing)
+            }
+        }
+    }
+
+    @Composable
+    fun StandingStats(standing: TeamStanding) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${standing.all.played}",
+                style = MaterialTheme.typography.body2,
+                modifier = Modifier.width(25.dp)
+            )
+            Text(
+                text = "${standing.all.win}",
+                style = MaterialTheme.typography.body2,
+                modifier = Modifier.width(25.dp)
+            )
+            Text(
+                text = "${standing.all.draw}",
+                style = MaterialTheme.typography.body2,
+                modifier = Modifier.width(25.dp)
+            )
+            Text(
+                text = "${standing.all.lose}",
+                style = MaterialTheme.typography.body2,
+                modifier = Modifier.width(25.dp)
+            )
+            Text(
+                text = "GD: ${standing.goalsDiff}",
+                style = MaterialTheme.typography.body2,
+                modifier = Modifier.width(50.dp)
+            )
+            Text(
+                text = "${standing.points}",
+                style = MaterialTheme.typography.body2,
+                modifier = Modifier.width(30.dp)
+            )
+        }
+    }
+
+    fun abbreviateTeamName(name: String): String {
+        return name.split(" ").map { it.take(3) }.joinToString("")
     }
 
 }
