@@ -16,10 +16,7 @@ interface FootballApi {
 
 
     @GET("transfers")
-    suspend fun getTransfers(
-        @Query("team") teamId: Int,
-        @Query("season") season: Int
-    ): TransfersResponse
+    suspend fun getTransfers(@Query("team") teamId: Int): TransfersResponse
 
     @GET("standings")
     suspend fun getStandings(
