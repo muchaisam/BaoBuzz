@@ -23,12 +23,31 @@ data class TeamStanding(
     val team: StandingTeam,
     val points: Int,
     val goalsDiff: Int,
+    val group: String,
     val form: String,
-    val description: String?
+    val status: String,
+    val description: String?,
+    val all: TeamStats,
+    val home: TeamStats,
+    val away: TeamStats,
+    val update: String
 )
 
 data class StandingTeam(
     val id: Int,
     val name: String,
     val logo: String
+)
+
+data class TeamStats(
+    val played: Int,
+    val win: Int,
+    val draw: Int,
+    val lose: Int,
+    val goals: StandingGoals
+)
+
+data class StandingGoals(
+    val goalsfor: Int,
+    val against: Int
 )
