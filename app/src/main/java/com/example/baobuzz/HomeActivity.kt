@@ -7,13 +7,24 @@ import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.baobuzz.fragments.StatisticsFragment
 import com.example.baobuzz.workmanager.FixtureWorker
+import com.example.baobuzz.workmanager.StandingsUpdateWorker
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import dagger.hilt.android.AndroidEntryPoint
+import java.util.concurrent.TimeUnit
 
+@AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
 
     // Variable to track if the back button was pressed twice
@@ -22,6 +33,8 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
+        // Set the theme based on system settings
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 
         // Set up the navigation components
         val navHostFragment =
@@ -45,6 +58,27 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
+        // Schedule the background update task
+        StandingsUpdateWorker.schedule(applicationContext)
+
         FixtureWorker.schedule(this)
+//        scheduleLiveScoreUpdates()
     }
+
+//    fun scheduleLiveScoreUpdates() {
+//        val constraints = Constraints.Builder()
+//            .setRequiredNetworkType(NetworkType.CONNECTED)
+//            .build()
+//
+//        val repeatingRequest = PeriodicWorkRequestBuilder<LiveScoreUpdateWorker>(15, TimeUnit.MINUTES)
+//            .setConstraints(constraints)
+//            .build()
+//
+//        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+//            "live_score_updates",
+//            ExistingPeriodicWorkPolicy.REPLACE,
+//            repeatingRequest
+//        )
+//    }
+
 }
