@@ -1,35 +1,25 @@
 package com.example.baobuzz.repository
 
-import android.util.Log
-import com.example.baobuzz.api.ApiClient
 import com.example.baobuzz.interfaces.FootballApi
 import com.example.baobuzz.models.Fixture
-import com.github.michaelbull.retry.policy.binaryExponentialBackoff
-import com.github.michaelbull.retry.policy.constantDelay
-import com.github.michaelbull.retry.policy.plus
-import com.github.michaelbull.retry.retry
-import io.github.oshai.kotlinlogging.KotlinLogging
-import com.github.michaelbull.retry.policy.stopAtAttempts
-import androidx.room.*
 import com.example.baobuzz.daos.AppDatabase
 import com.example.baobuzz.daos.CachedFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import kotlinx.serialization.json.Json
-import retrofit2.HttpException
 import com.example.baobuzz.interfaces.Result
 import kotlinx.datetime.toInstant
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import java.util.TimeZone
 
-private val logger = KotlinLogging.logger {}
-
 
 class FootballRepository(private val api: FootballApi, private val db: AppDatabase) {
     private val fixtureDao = db.fixtureDao()
     private val json = Json { ignoreUnknownKeys = true }
+    private val cacheTimeout = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+
 
     suspend fun getUpcomingFixtures(leagueId: Int, next: Int = 10): Result<List<Fixture>> {
         return withContext(Dispatchers.IO) {
@@ -83,4 +73,11 @@ class FootballRepository(private val api: FootballApi, private val db: AppDataba
 
         return currentTime - cachedFixtures.first().lastUpdated > cacheLifetime
     }
+
+
+
+    private fun isCacheExpired(timestamp: Long): Boolean {
+        return System.currentTimeMillis() - timestamp > cacheTimeout
+    }
 }
+
