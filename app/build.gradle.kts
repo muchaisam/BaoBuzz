@@ -1,8 +1,11 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0"
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -15,9 +18,14 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+//        val localProperties = gradleLocalProperties(rootDir)
+//        val apiKey = localProperties.getProperty("API_KEY") ?: ""
+//        buildConfigField("String", "API_KEY", "\"$apiKey\"")
     }
+
+
+
 
     buildTypes {
         release {
@@ -26,18 +34,26 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.2"
+    }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
+        compose = true
     }
 }
 
@@ -48,6 +64,8 @@ dependencies {
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity:1.9.1")
+    implementation("androidx.paging:paging-common-android:3.3.2")
+    implementation("androidx.paging:paging-runtime-ktx:3.3.2")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -97,5 +115,28 @@ dependencies {
 
     //calendarview
     implementation("com.kizitonwose.calendar:view:2.5.4")
+
+    //logging
+    implementation("com.jakewharton.timber:timber:5.0.1")
+
+    //swipe refresh layout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    //SHIMMER
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+
+
+    // Dagger - Hilt
+    implementation("com.google.dagger:hilt-android:2.48")
+    kapt("com.google.dagger:hilt-compiler:2.48")
+
+    // Compose
+    implementation("androidx.compose.ui:ui:1.5.2")
+    implementation("androidx.compose.material:material:1.5.2")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.2")
+    implementation("androidx.activity:activity-compose:1.7.2")
+
+    //coil compose
+    implementation("io.coil-kt:coil-compose:2.2.2")
 
 }
