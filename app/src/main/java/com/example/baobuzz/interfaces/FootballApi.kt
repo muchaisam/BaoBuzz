@@ -1,6 +1,7 @@
 package com.example.baobuzz.interfaces
 
 import com.example.baobuzz.models.FixturesResponse
+import com.example.baobuzz.models.StandingsResponse
 import com.example.baobuzz.models.TransfersResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -19,5 +20,11 @@ interface FootballApi {
         @Query("team") teamId: Int,
         @Query("season") season: Int
     ): TransfersResponse
+
+    @GET("standings")
+    suspend fun getStandings(
+        @Query("league") league: Int,
+        @Query("season") season: Int
+    ): StandingsResponse
 
 }
