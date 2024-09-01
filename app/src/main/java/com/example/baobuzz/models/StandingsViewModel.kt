@@ -18,6 +18,9 @@ class StandingsViewModel(private val repository: StandingsRepository) : ViewMode
     private val _uiState = MutableStateFlow<StandingsUiState>(StandingsUiState.Loading)
     val uiState: StateFlow<StandingsUiState> = _uiState
 
+    private val _selectedLeague = MutableStateFlow<Int>(39) // Default to Premier League
+    val selectedLeague: StateFlow<Int> = _selectedLeague
+
     private val topFiveLeagues = listOf(39, 140, 61, 78, 135) // Premier League, La Liga, Ligue 1, Bundesliga, Serie A
     private val currentSeason = 2023 // Update this value for the current season
 
@@ -38,6 +41,10 @@ class StandingsViewModel(private val repository: StandingsRepository) : ViewMode
                 _uiState.value = StandingsUiState.Error("Failed to load standings: ${e.message}")
             }
         }
+    }
+
+    fun selectLeague(leagueId: Int) {
+        _selectedLeague.value = leagueId
     }
 
     fun retry() {
