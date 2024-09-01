@@ -5,56 +5,137 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import com.example.baobuzz.R
+import com.example.baobuzz.api.ApiClient
+import com.example.baobuzz.daos.AppDatabase
+import com.example.baobuzz.models.LeagueStandings
+import com.example.baobuzz.models.StandingsUiState
+import com.example.baobuzz.models.StandingsViewModel
+import com.example.baobuzz.models.TeamStanding
+import com.example.baobuzz.repository.FootballRepository
+import com.example.baobuzz.repository.StandingsRepository
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [StatisticsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class StatisticsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var viewModel: StandingsViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val repository = StandingsRepository(ApiClient.footballApi,
+                AppDatabase.getInstance(requireContext()))
+        val factory = StandingsViewModel.Factory(repository)
+        viewModel = ViewModelProvider(this, factory)[StandingsViewModel::class.java]
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val darkTheme = isSystemInDarkTheme()
+                MaterialTheme(
+                    colors = if (darkTheme) darkColors() else lightColors()
+                ) {
+                    StandingsScreen(viewModel)
+                }
+            }
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_statistics, container, false)
+    @Composable
+    fun StandingsScreen(viewModel: StandingsViewModel) {
+        val uiState by viewModel.uiState.collectAsState()
+
+        when (val state = uiState) {
+            is StandingsUiState.Loading -> LoadingScreen()
+            is StandingsUiState.Success -> StandingsList(state.standings)
+            is StandingsUiState.Error -> ErrorScreen(state.message) { viewModel.retry() }
+        }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment StatisticsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            StatisticsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    @Composable
+    fun LoadingScreen() {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+
+    @Composable
+    fun ErrorScreen(message: String, onRetry: () -> Unit) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = message, style = MaterialTheme.typography.h6)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onRetry) {
+                Text("Retry")
+            }
+        }
+    }
+
+    @Composable
+    fun StandingsList(standings: Map<Int, LeagueStandings?>) {
+        LazyColumn {
+            standings.forEach { (leagueId, leagueStandings) ->
+                item {
+                    Text(
+                        text = leagueStandings?.league?.name ?: "Unknown League",
+                        style = MaterialTheme.typography.h5,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                leagueStandings?.league?.standings?.firstOrNull()?.let { teamStandings ->
+                    items(teamStandings) { standing ->
+                        StandingItem(standing)
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
+        }
     }
+
+    @Composable
+    fun StandingItem(standing: TeamStanding) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "${standing.rank}.", modifier = Modifier.width(30.dp))
+            Text(text = standing.team.name, modifier = Modifier.weight(1f))
+            Text(text = "${standing.points} pts", modifier = Modifier.width(50.dp))
+        }
+    }
+
 }
