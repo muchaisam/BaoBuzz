@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
+import com.example.baobuzz.workmanager.FixtureWorker
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class HomeActivity : AppCompatActivity() {
@@ -43,5 +44,7 @@ class HomeActivity : AppCompatActivity() {
                 )
             }
         }
+
+        FixtureWorker.schedule(this)
     }
 }

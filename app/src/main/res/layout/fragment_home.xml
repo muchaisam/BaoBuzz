@@ -76,12 +76,11 @@
         app:layout_constraintTop_toBottomOf="@id/searchView" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/leagueRecyclerView"
-        android:layout_width="0dp"
+        android:id="@+id/rvLeagues"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:orientation="horizontal"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/leagueTitle"
@@ -97,7 +96,7 @@
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/leagueRecyclerView" />
+        app:layout_constraintTop_toBottomOf="@id/rvLeagues" />
 
     <TextView
         android:id="@+id/seeAllLive"

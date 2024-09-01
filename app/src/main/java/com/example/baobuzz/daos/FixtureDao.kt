@@ -7,12 +7,12 @@ import androidx.room.Query
 
 @Dao
 interface FixtureDao {
-    @Query("SELECT * FROM fixtures WHERE leagueId = :leagueId")
+    @Query("SELECT * FROM cached_fixtures WHERE league_id = :leagueId")
     fun getFixturesForLeague(leagueId: Int): List<CachedFixture>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertFixtures(fixtures: List<CachedFixture>)
 
-    @Query("DELETE FROM fixtures WHERE leagueId = :leagueId")
-    fun deleteFixturesForLeague(leagueId: Int): Int
+    @Query("DELETE FROM cached_fixtures WHERE league_id = :leagueId")
+    fun deleteFixturesForLeague(leagueId: Int)
 }

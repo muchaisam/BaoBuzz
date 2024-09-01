@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="8dp">
 
     <ImageView
-        android:id="@+id/leagueLogo"
+        android:id="@+id/ivLeagueLogo"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_gravity="center"
+        android:layout_centerHorizontal="true"
         android:scaleType="fitCenter" />
 
     <TextView
-        android:id="@+id/leagueName"
+        android:id="@+id/tvLeagueName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_below="@id/ivLeagueLogo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="4dp"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tvCountry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvLeagueName"
+        android:layout_centerHorizontal="true"
         android:layout_gravity="center"
         android:layout_marginTop="4dp"
         android:textSize="12sp" />
 
-</LinearLayout>
+</RelativeLayout>

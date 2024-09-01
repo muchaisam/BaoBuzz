@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit
 import kotlinx.serialization.json.Json
 import retrofit2.HttpException
 import com.example.baobuzz.interfaces.Result
+import kotlinx.datetime.toInstant
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import java.util.TimeZone
 
@@ -33,7 +35,7 @@ class FootballRepository(private val api: FootballApi, private val db: AppDataba
         return withContext(Dispatchers.IO) {
             try {
                 val cachedFixtures = fixtureDao.getFixturesForLeague(leagueId)
-                if (cachedFixtures.isNotEmpty() && !isCacheExpired(cachedFixtures.first().lastUpdated)) {
+                if (cachedFixtures.isNotEmpty() && !isCacheExpired(cachedFixtures)) {
                     Result.Success(cachedFixtures.map { json.decodeFromString(it.fixtureData) })
                 } else {
                     val fixtures = fetchAndCacheFixtures(leagueId, next)
@@ -45,7 +47,7 @@ class FootballRepository(private val api: FootballApi, private val db: AppDataba
         }
     }
 
-    private suspend fun fetchAndCacheFixtures(leagueId: Int, next: Int): List<Fixture> {
+    suspend fun fetchAndCacheFixtures(leagueId: Int, next: Int): List<Fixture> {
         val response = api.getUpcomingFixtures(leagueId, next, TimeZone.getDefault().id)
         val fixtures = response.response.filter { it.fixture.status.short == "NS" }
 
@@ -55,6 +57,7 @@ class FootballRepository(private val api: FootballApi, private val db: AppDataba
                 id = it.fixture.id,
                 leagueId = leagueId,
                 fixtureData = json.encodeToString(it),
+                fixtureDate = it.fixture.date.toInstant().toEpochMilliseconds(),
                 lastUpdated = System.currentTimeMillis()
             )
         })
@@ -62,10 +65,22 @@ class FootballRepository(private val api: FootballApi, private val db: AppDataba
         return fixtures
     }
 
-
-    private fun isCacheExpired(lastUpdated: Long): Boolean {
+    private fun isCacheExpired(cachedFixtures: List<CachedFixture>): Boolean {
         val currentTime = System.currentTimeMillis()
-        val cacheLifetime = TimeUnit.HOURS.toMillis(1) // Cache expires after 1 hour
-        return currentTime - lastUpdated > cacheLifetime
+        val nextFixtureTime = cachedFixtures
+            .map { json.decodeFromString<Fixture>(it.fixtureData) }
+            .minByOrNull { it.fixture.timestamp }
+            ?.fixture
+            ?.timestamp
+            ?: return true
+
+        val timeUntilNextFixture = nextFixtureTime - currentTime
+        val cacheLifetime = when {
+            timeUntilNextFixture < TimeUnit.HOURS.toMillis(6) -> TimeUnit.MINUTES.toMillis(30)
+            timeUntilNextFixture < TimeUnit.DAYS.toMillis(1) -> TimeUnit.HOURS.toMillis(2)
+            else -> TimeUnit.HOURS.toMillis(6)
+        }
+
+        return currentTime - cachedFixtures.first().lastUpdated > cacheLifetime
     }
 }

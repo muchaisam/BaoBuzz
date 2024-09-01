@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/tvLeagueTag"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:orientation="horizontal">
+
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chip"
+        app:chipBackgroundColor="@android:color/transparent"
+        app:chipCornerRadius="8dp"
+        app:chipIconSize="18dp"
+        app:chipStrokeColor="@color/accentColor"
+        app:chipStrokeWidth="1dp"
+        app:closeIcon="@drawable/ic_back"
+        app:closeIconEnabled="true"
+        app:closeIconSize="18dp"
+        app:closeIconEndPadding="4dp"
+        app:closeIconStartPadding="4dp"
+        app:closeIconVisible="true"
+        app:chipEndPadding="4dp"
+        app:chipStartPadding="4dp"
+        app:chipSpacing="4dp"/>
+
+
+    </LinearLayout>
