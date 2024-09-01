@@ -32,6 +32,7 @@ class CalendarFragment : Fragment() {
     private lateinit var imageLoader: ImageLoader
     private lateinit var viewModel: CalendarViewModel
     private lateinit var progressDialog: BlurredProgressDialog
+    private lateinit var layoutManager: LinearLayoutManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +75,7 @@ class CalendarFragment : Fragment() {
 
     private fun setupChips() {
         val leagueInfoList = viewModel.getLeagueInfo()
+        binding.chipGroup.removeAllViews() // Clear existing chips
         leagueInfoList.forEach { leagueInfo ->
             val chip = Chip(context).apply {
                 text = leagueInfo.name
