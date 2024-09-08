@@ -215,7 +215,7 @@ class StatisticsFragment : Fragment() {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = abbreviateTeamName(standing.team.name),
+                    text = firstWordAbbreviation(standing.team.name),
                     modifier = Modifier.width(100.dp),
                     style = MaterialTheme.typography.body2
                 )
@@ -261,8 +261,8 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    fun abbreviateTeamName(name: String): String {
-        return name.split(" ").map { it.take(3) }.joinToString("")
+    fun firstWordAbbreviation(name: String): String {
+        return name.split(" ").first().take(3).uppercase()
     }
 
 }
