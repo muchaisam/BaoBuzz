@@ -1,5 +1,7 @@
 package com.example.baobuzz.interfaces
 
+import com.example.baobuzz.models.ApiResponse
+import com.example.baobuzz.models.Coach
 import com.example.baobuzz.models.FixturesResponse
 import com.example.baobuzz.models.StandingsResponse
 import com.example.baobuzz.models.TransfersResponse
@@ -23,5 +25,8 @@ interface FootballApi {
         @Query("league") league: Int,
         @Query("season") season: Int
     ): StandingsResponse
+
+    @GET("coachs")
+    suspend fun getCoach(@Query("id") id: Int): ApiResponse<Coach>
 
 }
