@@ -1,11 +1,14 @@
 package com.example.baobuzz.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
@@ -24,15 +26,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -52,8 +48,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -207,8 +204,63 @@ fun CoachDetailsDialog(
 
 @Composable
 fun LoadingScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        ShimmerLoadingEffect()
+    }
+}
+
+@Composable
+fun ShimmerLoadingEffect(
+    colors: List<Color> = listOf(
+        Color.LightGray.copy(alpha = 0.6f),
+        Color.LightGray.copy(alpha = 0.2f),
+        Color.LightGray.copy(alpha = 0.6f)
+    )
+) {
+    val transition = rememberInfiniteTransition()
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing)
+        )
+    )
+
+    val brush = Brush.linearGradient(
+        colors = colors,
+        start = Offset(0f, 0f),
+        end = Offset(translateAnim, 0f)
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(brush)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(20.dp)
+                .background(brush)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .height(20.dp)
+                .background(brush)
+        )
     }
 }
 
@@ -216,57 +268,6 @@ fun LoadingScreen() {
 fun ErrorScreen(message: String) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = "Error: $message", color = MaterialTheme.colors.error)
-    }
-}
-
-
-@Composable
-fun CoachHeader(coach: Coach) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = coach.photo,
-            contentDescription = "Coach ${coach.name}",
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-        )
-        Column(modifier = Modifier.padding(start = 16.dp)) {
-            Text(text = coach.name, style = MaterialTheme.typography.h5.copy(fontFamily = AppFontFamily.Gabarito))
-            Text(text = "Age: ${coach.age}", style = MaterialTheme.typography.body1.copy(fontFamily = AppFontFamily.Gabarito))
-            Text(text = "Current Team: ${coach.team.name}", style = MaterialTheme.typography.body1.copy(fontFamily = AppFontFamily.Gabarito))
-        }
-    }
-}
-
-
-@Composable
-fun SingleCoachView(
-    coach: Coach,
-    onSelectForComparison: (Coach) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        CoachHeader(coach)
-        Button(onClick = { onSelectForComparison(coach) }) {
-            Text("Select for Comparison")
-        }
-        CareerTimeline(coach.career)
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun CoachComparisonView(coaches: List<Coach>) {
-    val pagerState = rememberPagerState { coaches.size }
-
-    HorizontalPager(
-        state = pagerState
-    ) { page ->
-        SingleCoachView(coaches[page], onSelectForComparison = {})
     }
 }
 
