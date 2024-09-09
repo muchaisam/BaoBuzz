@@ -1,12 +1,9 @@
 package com.example.baobuzz.repository
 
-import com.example.baobuzz.daos.AppDatabase
-import com.example.baobuzz.daos.CachedCoach
 import com.example.baobuzz.interfaces.FootballApi
 import com.example.baobuzz.models.Coach
 import com.example.baobuzz.daos.CoachDao
 import com.example.baobuzz.interfaces.CoachResult
-import com.example.baobuzz.models.CoachStatistics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
