@@ -21,23 +21,37 @@ class CoachViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<CoachUiState>(CoachUiState.Loading)
     val uiState: StateFlow<CoachUiState> = _uiState.asStateFlow()
 
-    private val _selectedCoaches = MutableStateFlow<List<Coach>>(emptyList())
-    val selectedCoaches: StateFlow<List<Coach>> = _selectedCoaches.asStateFlow()
+    private val _selectedCoach = MutableStateFlow<Coach?>(null)
+    val selectedCoach: StateFlow<Coach?> = _selectedCoach.asStateFlow()
 
-    fun loadCoach(id: Int) {
+
+    fun loadCoaches(ids: List<Int>) {
         viewModelScope.launch {
             _uiState.value = CoachUiState.Loading
-            _uiState.value = when (val result = repository.getCoach(id)) {
-                is CoachResult.Success -> CoachUiState.Success(result.data)
-                is CoachResult.Error -> CoachUiState.Error(result.exception.message ?: "Unknown error")
+            try {
+                val coaches = ids.mapNotNull { id ->
+                    when (val result = repository.getCoach(id)) {
+                        is CoachResult.Success -> result.data
+                        is CoachResult.Error -> {
+                            _uiState.value = CoachUiState.Error(result.exception.message ?: "Unknown error")
+                            null
+                        }
+                    }
+                }
+                _uiState.value = CoachUiState.Success(coaches)
+            } catch (e: Exception) {
+                _uiState.value = CoachUiState.Error(e.message ?: "Unknown error")
             }
+
         }
     }
 
-    fun toggleCoachSelection(coach: Coach) {
-        _selectedCoaches.update { current ->
-            if (current.contains(coach)) current - coach else current + coach
-        }
+    fun selectCoach(coach: Coach) {
+        _selectedCoach.value = coach
+    }
+
+    fun clearSelectedCoach() {
+        _selectedCoach.value = null
     }
 }
 // ViewModelFactory
@@ -56,6 +70,6 @@ class CoachViewModelFactory @Inject constructor(
 
 sealed class CoachUiState {
     object Loading : CoachUiState()
-    data class Success(val coach: Coach) : CoachUiState()
+    data class Success(val coaches: List<Coach>) : CoachUiState()
     data class Error(val message: String) : CoachUiState()
 }
