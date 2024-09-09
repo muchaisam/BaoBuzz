@@ -22,7 +22,7 @@ class StandingsViewModel(private val repository: StandingsRepository) : ViewMode
     val selectedLeague: StateFlow<Int> = _selectedLeague
 
     private val topFiveLeagues = listOf(39, 140, 61, 78, 135) // Premier League, La Liga, Ligue 1, Bundesliga, Serie A
-    private val currentSeason = 2023 // Update this value for the current season
+    private val currentSeason = 2024 
 
     init {
         loadStandings()

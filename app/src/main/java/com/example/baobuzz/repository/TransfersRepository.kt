@@ -16,13 +16,14 @@ import timber.log.Timber
 import java.io.IOException
 import java.time.LocalDate
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 class TransfersRepository @Inject constructor(
     private val apiService: FootballApi,
     private val transfersDao: TransferDao,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @Named("IoDispatcher") private val ioDispatcher: CoroutineDispatcher
 ) {
     fun getTransfers(teamId: Int): Flow<NetworkResult<List<Transfer>>> = flow {
         val currentYear = LocalDate.now().year

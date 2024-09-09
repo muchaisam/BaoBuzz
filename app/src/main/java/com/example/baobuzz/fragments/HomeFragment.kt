@@ -5,18 +5,24 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.children
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.baobuzz.R
 import com.example.baobuzz.adapter.LeagueAdapter
 import com.example.baobuzz.adapter.TransfersAdapter
 import com.example.baobuzz.api.ApiClient
+import com.example.baobuzz.components.CoachCareerViewer
 import com.example.baobuzz.daos.AppDatabase
 import com.example.baobuzz.daos.Transfer
 import com.example.baobuzz.databinding.FragmentHomeBinding
 import com.example.baobuzz.interfaces.NetworkResult
+import com.example.baobuzz.models.CoachViewModel
+import com.example.baobuzz.models.CoachViewModelFactory
 import com.example.baobuzz.models.HomeViewModel
 import com.example.baobuzz.models.HomeViewModelFactory
 import com.example.baobuzz.models.LeagueInfoProvider
@@ -27,9 +33,14 @@ import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
+    @Inject
+    lateinit var viewModelFactory: CoachViewModelFactory
+
+    private val viewModel: CoachViewModel by viewModels { viewModelFactory }
     private lateinit var binding: FragmentHomeBinding
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var leagueAdapter: LeagueAdapter
@@ -42,6 +53,13 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        // Set up ComposeView to display CoachScreen
+        val composeView = binding.composeView
+        composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        composeView.setContent {
+            CoachCareerViewer(viewModel = viewModel)
+        }
         return binding.root
     }
 
@@ -67,6 +85,8 @@ class HomeFragment : Fragment() {
 
         // Load transfers for the first team by default
         transfersViewModel.selectTeam(TeamConfigManager.getTeams().first())
+
+        viewModel.loadCoaches(listOf(4, 10, 11))
     }
 
 

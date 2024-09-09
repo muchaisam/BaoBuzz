@@ -4,19 +4,24 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.baobuzz.daos.Transfer
+import androidx.room.TypeConverters
 import com.example.baobuzz.entity.CachedStanding
-import java.util.Date
+import com.example.baobuzz.models.CareerStepListConverter
+import com.example.baobuzz.models.Coach
+import com.example.baobuzz.models.TeamConverter
 
-@Database(entities = [CachedFixture::class, Transfer::class, CachedStanding::class],
+@Database(entities = [CachedFixture::class, Transfer::class, CachedStanding::class, Coach::class],
     version = 1,
     exportSchema = false
 )
+@TypeConverters(TeamConverter::class, CareerStepListConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun fixtureDao(): FixtureDao
     abstract fun transferDao(): TransferDao
 
     abstract fun standingsDao(): StandingsDao
+
+    abstract fun coachDao(): CoachDao
 
     companion object {
         @Volatile

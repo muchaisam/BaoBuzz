@@ -10,22 +10,34 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.hilt.work.HiltWorkerFactory
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
+import androidx.work.Configuration
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.baobuzz.fragments.StatisticsFragment
+import com.example.baobuzz.workmanager.CoachUpdateWorker
 import com.example.baobuzz.workmanager.FixtureWorker
 import com.example.baobuzz.workmanager.StandingsUpdateWorker
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    fun getWorkManagerConfiguration() =
+        Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     // Variable to track if the back button was pressed twice
     private var doubleBackToExitPressed = false
@@ -62,7 +74,20 @@ class HomeActivity : AppCompatActivity() {
         StandingsUpdateWorker.schedule(applicationContext)
 
         FixtureWorker.schedule(this)
+        setupPeriodicCoachUpdate()
 //        scheduleLiveScoreUpdates()
+    }
+
+    private fun setupPeriodicCoachUpdate() {
+        val updateRequest = PeriodicWorkRequestBuilder<CoachUpdateWorker>(
+            7, TimeUnit.DAYS
+        ).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "coach_update",
+            ExistingPeriodicWorkPolicy.KEEP,
+            updateRequest
+        )
     }
 
 //    fun scheduleLiveScoreUpdates() {
