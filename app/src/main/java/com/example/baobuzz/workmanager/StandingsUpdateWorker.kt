@@ -18,7 +18,7 @@ class StandingsUpdateWorker(
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
-    private lateinit var appDatabase: AppDatabase
+    private val appDatabase: AppDatabase = AppDatabase.getInstance(context)
 
     override suspend fun doWork(): Result {
 
