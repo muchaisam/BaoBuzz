@@ -74,7 +74,7 @@ fun CoachCareerViewer(
     val selectedCoach by viewModel.selectedCoach.collectAsState()
 
     when (val state = uiState) {
-        is CoachUiState.Loading -> LoadingScreen()
+        is CoachUiState.Loading -> LoadingScreen(cardCount = 3)
         is CoachUiState.Error -> ErrorScreen(state.message)
         is CoachUiState.Success -> {
             Box(modifier = modifier.fillMaxSize()) {
@@ -203,17 +203,18 @@ fun CoachDetailsDialog(
 
 
 @Composable
-fun LoadingScreen() {
+fun LoadingScreen(cardCount: Int = 3) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        ShimmerLoadingEffect()
+        ShimmerLoadingEffect(cardCount)
     }
 }
 
 @Composable
 fun ShimmerLoadingEffect(
+    cardCount: Int,
     colors: List<Color> = listOf(
         Color.LightGray.copy(alpha = 0.6f),
         Color.LightGray.copy(alpha = 0.2f),
@@ -231,35 +232,70 @@ fun ShimmerLoadingEffect(
 
     val brush = Brush.linearGradient(
         colors = colors,
-        start = Offset(0f, 0f),
-        end = Offset(translateAnim, 0f)
+        start = Offset.Zero,
+        end = Offset(x = translateAnim, y = translateAnim)
     )
 
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(cardCount) {
+            ShimmerCard(brush)
+        }
+    }
+}
+
+@Composable
+fun ShimmerCard(brush: Brush) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .width(200.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colors.surface)
+            .padding(16.dp)
     ) {
+        // Shimmer effect for profile picture
         Box(
             modifier = Modifier
                 .size(100.dp)
+                .clip(RoundedCornerShape(50))
                 .background(brush)
+                .align(Alignment.CenterHorizontally)
         )
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Shimmer effect for name
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.8f)
                 .height(20.dp)
+                .clip(RoundedCornerShape(4.dp))
                 .background(brush)
+                .align(Alignment.CenterHorizontally)
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Shimmer effect for team name
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.7f)
-                .height(20.dp)
+                .fillMaxWidth(0.6f)
+                .height(16.dp)
+                .clip(RoundedCornerShape(4.dp))
                 .background(brush)
+                .align(Alignment.CenterHorizontally)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Shimmer effect for age
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.4f)
+                .height(16.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(brush)
+                .align(Alignment.CenterHorizontally)
         )
     }
 }

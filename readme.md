@@ -42,7 +42,10 @@ BaoBuzz is a modern, feature-rich live score app for Android, delivering real-ti
 
 ## 📸 Screenshots
 
+<img src="https://github.com/muchaisam/BaoBuzz/blob/main/screenshots/home.png" alt="App Homepage screenshot" width="300"/>
+
 <img src="https://github.com/muchaisam/BaoBuzz/blob/main/screenshots/schedule.png" alt="Schedule Screenshot" width="300"/>
+
 
 ## 🚀 Installation
 
