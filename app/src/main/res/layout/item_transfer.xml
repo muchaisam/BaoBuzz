@@ -2,95 +2,93 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     app:cardUseCompatPadding="true"
-    app:cardCornerRadius="18dp"
-    android:elevation="5dp"
-    app:contentPadding="16dp">
+    app:cardCornerRadius="12dp"
+    android:elevation="6dp"
+    android:layout_margin="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
 
+        <!-- Player Name -->
         <TextView
             android:id="@+id/playerName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Manuel Ugarte"
-            android:textSize="24sp"
+            android:textSize="20sp"
             android:textStyle="bold"
+            android:gravity="center"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/playertoTeam"/>
-
-        <ImageView
-            android:id="@+id/playertoTeam"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/pl"
-            android:adjustViewBounds="true"
-            app:layout_constraintTop_toTopOf="@id/playerName"
-            app:layout_constraintBottom_toBottomOf="@id/playerName"
             app:layout_constraintEnd_toEndOf="parent"/>
 
+        <!-- Transfer Fee -->
         <TextView
             android:id="@+id/transferFee"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="$50M"
             android:textColor="@color/highlightColor"
-            android:textSize="22sp"
+            android:textSize="18sp"
             android:textStyle="bold"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@id/playerName"
             app:layout_constraintStart_toStartOf="parent"/>
 
+        <!-- Transfer Date -->
         <TextView
             android:id="@+id/transferDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="12-09-2024"
-            android:textColor="@color/successColor"
-            android:textSize="16sp"
+            android:textSize="14sp"
             app:layout_constraintTop_toTopOf="@id/transferFee"
-            app:layout_constraintBottom_toBottomOf="@id/transferFee"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/transferFee"/>
 
+        <!-- From Team -->
         <TextView
             android:id="@+id/fromTeam"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PSG"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@id/transferFee"
             app:layout_constraintStart_toStartOf="parent"/>
 
+        <!-- Transfer Arrow -->
         <ImageView
             android:id="@+id/transferArrow"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:src="@drawable/ic_back"
             android:rotation="180"
+            android:contentDescription="Transfer arrow"
+            android:layout_marginStart="8dp"
             app:layout_constraintTop_toTopOf="@id/fromTeam"
             app:layout_constraintBottom_toBottomOf="@id/fromTeam"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintStart_toEndOf="@id/fromTeam"/>
 
+        <!-- To Team -->
         <TextView
             android:id="@+id/toTeam"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Manchester United"
-            android:textColor="@color/secondaryColor"
-            android:textSize="18sp"
+            android:textColor="@color/accentColor"
+            android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintTop_toTopOf="@id/fromTeam"
             app:layout_constraintBottom_toBottomOf="@id/fromTeam"
+            app:layout_constraintStart_toEndOf="@id/transferArrow"
             app:layout_constraintEnd_toEndOf="parent"/>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

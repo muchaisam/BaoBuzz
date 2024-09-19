@@ -1,5 +1,3 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -9,19 +7,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.baobuzz"
+    namespace = "com.msdc.baobuzz"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.baobuzz"
-        minSdk = 28
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        applicationId = "com.msdc.baobuzz"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 3
+        versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-//        val localProperties = gradleLocalProperties(rootDir)
-//        val apiKey = localProperties.getProperty("API_KEY") ?: ""
-//        buildConfigField("String", "API_KEY", "\"$apiKey\"")
     }
 
 

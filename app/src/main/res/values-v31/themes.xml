@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="SplashTheme" parent="Theme.Material3.Light.NoActionBar">
         <item name="android:windowBackground">@color/white</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_background</item>
