@@ -3,61 +3,62 @@ package com.msdc.baobuzz
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.msdc.baobuzz.ux.OnboardingActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
 class MainActivity : AppCompatActivity() {
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
 
-        installSplashScreen().setOnExitAnimationListener { splashScreenViewProvider ->
-            // Set the theme back to the normal theme
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            splashScreen.setOnExitAnimationListener { splashScreenView ->
+                splashScreenView.remove()
+            }
+        } else {
             setTheme(R.style.Theme_BaoBuzz)
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(1500) // Wait for 1.5 seconds before checking the internet connection
+        // Immediately check for network connection
+        if (!isNetworkConnected()) {
+            // Show network alert dialog
+            AlertDialog.Builder(this@MainActivity)
+                .setTitle("No Internet Connection")
+                .setMessage("Please check your internet connection and try again.")
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        } else {
+            // Handle onboarding or home screen logic
+            val sharedPref = getSharedPreferences("Onboarding", Context.MODE_PRIVATE)
+            val shown = sharedPref.getBoolean("Shown", false)
 
-            if (!isNetworkConnected()) {
-                AlertDialog.Builder(this@MainActivity)
-                    .setTitle("No Internet Connection")
-                    .setMessage("Please check your internet connection and try again.")
-                    .setPositiveButton(
-                        android.R.string.ok,
-                        null
-                    ) // Don't finish the activity when the OK button is clicked
-                    .show()
+            if (!shown) {
+                // Start OnboardingActivity
+                val intent = Intent(this@MainActivity, OnboardingActivity::class.java)
+                startActivity(intent)
             } else {
-                val sharedPref = getSharedPreferences("Onboarding", Context.MODE_PRIVATE)
-                val shown = sharedPref.getBoolean("Shown", false)
-
-                if (!shown) {
-                    // Start OnboardingActivity
-                    val intent = Intent(this@MainActivity, OnboardingActivity::class.java)
-                    startActivity(intent)
-                } else {
-                    // Start LoginActivity
-                    val intent = Intent(this@MainActivity, HomeActivity::class.java)
-                    startActivity(intent)
-                }
-
+                // Start HomeActivity
+                val intent = Intent(this@MainActivity, HomeActivity::class.java)
+                startActivity(intent)
             }
+
+            // Finish MainActivity to prevent back navigation to it
+            finish()
         }
     }
 
     private fun isNetworkConnected(): Boolean {
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
-        return activeNetwork?.isConnectedOrConnecting == true
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            cm.activeNetwork != null
+        } else {
+            @Suppress("DEPRECATION")
+            cm.activeNetworkInfo?.isConnectedOrConnecting == true
+        }
     }
 }
