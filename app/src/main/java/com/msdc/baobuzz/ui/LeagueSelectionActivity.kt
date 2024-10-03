@@ -27,8 +27,7 @@ class LeagueSelectionActivity : ComponentActivity() {
             onComplete = {
                 startActivity(Intent(this@LeagueSelectionActivity, HomeActivity::class.java))
                 finish()
-            },
-            reduceMotion = false // You may want to make this configurable
+            }
         )
     }
 }
