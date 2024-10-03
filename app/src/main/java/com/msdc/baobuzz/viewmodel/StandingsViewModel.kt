@@ -1,8 +1,9 @@
-package com.msdc.baobuzz.models
+package com.msdc.baobuzz.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.msdc.baobuzz.models.LeagueStandings
 import com.msdc.baobuzz.repository.StandingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
