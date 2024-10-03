@@ -54,8 +54,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.msdc.baobuzz.models.LeagueStanding
 import com.msdc.baobuzz.models.LeagueStandings
-import com.msdc.baobuzz.models.StandingsUiState
-import com.msdc.baobuzz.models.StandingsViewModel
+import com.msdc.baobuzz.viewmodel.StandingsUiState
+import com.msdc.baobuzz.viewmodel.StandingsViewModel
 import com.msdc.baobuzz.models.TeamStanding
 
 @Composable
