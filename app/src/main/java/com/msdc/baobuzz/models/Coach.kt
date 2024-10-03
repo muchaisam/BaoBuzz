@@ -35,22 +35,6 @@ data class CareerStep(
     val end: String?,
 )
 
-
-// API Response Models
-data class ApiResponse<T>(
-    val get: String,
-    val parameters: Map<String, String>,
-    val errors: List<String>,
-    val results: Int,
-    val paging: CoachPaging,
-    val response: List<T>
-)
-
-data class CoachPaging(
-    val current: Int,
-    val total: Int
-)
-
 class TeamConverter {
     @TypeConverter
     fun fromTeam(team: TeamManaged): String = Gson().toJson(team)
