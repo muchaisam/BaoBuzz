@@ -60,10 +60,10 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.msdc.baobuzz.models.CareerStep
 import com.msdc.baobuzz.models.Coach
-import com.msdc.baobuzz.models.CoachUiState
+import com.msdc.baobuzz.viewmodel.CoachUiState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.msdc.baobuzz.R
-import com.msdc.baobuzz.models.CoachViewModel
+import com.msdc.baobuzz.viewmodel.CoachViewModel
 
 @Composable
 fun CoachCareerViewer(
