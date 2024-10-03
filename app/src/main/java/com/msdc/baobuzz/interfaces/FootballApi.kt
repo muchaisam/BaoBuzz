@@ -3,12 +3,8 @@ package com.msdc.baobuzz.interfaces
 import com.msdc.baobuzz.models.ApiResponse
 import com.msdc.baobuzz.models.Coach
 import com.msdc.baobuzz.models.FixturesResponse
-import com.msdc.baobuzz.models.League
-import com.msdc.baobuzz.models.LeagueResponse
 import com.msdc.baobuzz.models.LeagueWrapper
 import com.msdc.baobuzz.models.StandingsResponse
-import com.msdc.baobuzz.models.Team
-import com.msdc.baobuzz.models.TeamResponse
 import com.msdc.baobuzz.models.TeamWrapper
 import com.msdc.baobuzz.models.TransfersResponse
 import retrofit2.http.GET
