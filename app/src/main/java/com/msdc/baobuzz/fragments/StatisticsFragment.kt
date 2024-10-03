@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.ViewModelProvider
 import com.msdc.baobuzz.api.ApiClient
 import com.msdc.baobuzz.daos.AppDatabase
-import com.msdc.baobuzz.models.StandingsViewModel
+import com.msdc.baobuzz.viewmodel.StandingsViewModel
 import com.msdc.baobuzz.repository.StandingsRepository
 import com.msdc.baobuzz.components.StandingsScreen
 
