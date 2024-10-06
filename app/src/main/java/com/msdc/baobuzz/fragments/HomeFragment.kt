@@ -10,6 +10,9 @@ import androidx.core.view.children
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.msdc.baobuzz.adapter.LeagueAdapter
 import com.msdc.baobuzz.adapter.TransfersAdapter
@@ -28,6 +31,11 @@ import com.msdc.baobuzz.models.TeamConfig
 import com.msdc.baobuzz.models.TeamConfigManager
 import com.msdc.baobuzz.viewmodel.TransfersViewModel
 import com.google.android.material.chip.Chip
+import com.msdc.baobuzz.components.home.HomeScreen
+import com.msdc.baobuzz.repository.StandingsRepository
+import com.msdc.baobuzz.ui.TeamsPreview
+import com.msdc.baobuzz.ux.FootballAppTheme
+import com.msdc.baobuzz.viewmodel.StandingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -37,6 +45,10 @@ import javax.inject.Inject
 class HomeFragment : Fragment() {
     @Inject
     lateinit var viewModelFactory: CoachViewModelFactory
+
+    private val coachViewModel: CoachViewModel by viewModels { viewModelFactory }
+    private lateinit var standingsViewModel: StandingsViewModel
+    private lateinit var navController: NavController
 
     private val viewModel: CoachViewModel by viewModels { viewModelFactory }
     private lateinit var binding: FragmentHomeBinding
@@ -52,11 +64,22 @@ class HomeFragment : Fragment() {
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        // Set up ComposeView to display CoachScreen
+        val repository = StandingsRepository(ApiClient.footballApi,
+            AppDatabase.getInstance(requireContext()))
+        val factory = StandingsViewModel.Factory(repository)
+        standingsViewModel = ViewModelProvider(this, factory)[StandingsViewModel::class.java]
+        // Set up ComposeView to display FootballAppRoot
         val composeView = binding.composeView
         composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         composeView.setContent {
-            CoachCareerViewer(viewModel = viewModel)
+            navController = rememberNavController()
+            FootballAppTheme {
+                HomeScreen(
+                    coachViewModel = coachViewModel,
+                    standingsViewModel = standingsViewModel,
+                    navController = navController as NavHostController
+                )
+            }
         }
         return binding.root
     }
@@ -207,5 +230,3 @@ class HomeFragment : Fragment() {
         }
     }
 }
-
-
