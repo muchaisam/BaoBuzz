@@ -2,27 +2,27 @@ package com.msdc.baobuzz.fragments
 
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.google.android.material.chip.Chip
 import com.msdc.baobuzz.R
 import com.msdc.baobuzz.adapter.MatchAdapter
 import com.msdc.baobuzz.api.ApiClient
 import com.msdc.baobuzz.cache.ImageLoader
 import com.msdc.baobuzz.daos.AppDatabase
 import com.msdc.baobuzz.databinding.FragmentCalendarBinding
-import com.msdc.baobuzz.models.CalendarViewModel
-import com.msdc.baobuzz.repository.FootballRepository
-import com.google.android.material.chip.Chip
 import com.msdc.baobuzz.interfaces.Result
+import com.msdc.baobuzz.viewmodel.CalendarViewModel
 import com.msdc.baobuzz.models.LeagueInfoProvider
+import com.msdc.baobuzz.repository.FootballRepository
 import com.msdc.baobuzz.ux.BlurredProgressDialog
 
 
