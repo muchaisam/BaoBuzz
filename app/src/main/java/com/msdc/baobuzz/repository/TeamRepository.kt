@@ -1,6 +1,5 @@
 package com.msdc.baobuzz.repository
 
-import android.util.Log
 import com.msdc.baobuzz.daos.AppDatabase
 import com.msdc.baobuzz.interfaces.FootballApi
 import com.msdc.baobuzz.models.Team

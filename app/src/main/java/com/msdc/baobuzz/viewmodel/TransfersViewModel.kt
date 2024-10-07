@@ -2,7 +2,6 @@ package com.msdc.baobuzz.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import com.msdc.baobuzz.daos.Transfer
 import com.msdc.baobuzz.factory.TransfersFactory
 import com.msdc.baobuzz.interfaces.NetworkResult
@@ -10,6 +9,7 @@ import com.msdc.baobuzz.models.TeamConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel

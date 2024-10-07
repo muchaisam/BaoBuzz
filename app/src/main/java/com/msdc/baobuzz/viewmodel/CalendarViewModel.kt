@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.msdc.baobuzz.interfaces.Result
 import com.msdc.baobuzz.repository.FootballRepository
 import kotlinx.coroutines.launch
-import com.msdc.baobuzz.interfaces.Result
 
 class CalendarViewModel(
     private val repository: FootballRepository,

@@ -2,24 +2,19 @@ package com.msdc.baobuzz.ui
 
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +28,7 @@ import com.msdc.baobuzz.components.LeagueSelectionStep
 import com.msdc.baobuzz.components.NavigationButtons
 import com.msdc.baobuzz.components.NotificationSetupStep
 import com.msdc.baobuzz.components.TeamSelectionStep
+import com.msdc.baobuzz.ux.Typography
 import com.msdc.baobuzz.viewmodel.LeagueSelectionViewModel
 
 @Composable
@@ -66,7 +62,7 @@ fun LeagueSelectionScreen(
         ) { stepTitle ->
             Text(
                 text = stepTitle,
-                style = MaterialTheme.typography.headlineMedium
+                style = Typography.body2
             )
         }
 
