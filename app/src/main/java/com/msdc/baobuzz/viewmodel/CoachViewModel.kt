@@ -1,9 +1,10 @@
-package com.msdc.baobuzz.models
+package com.msdc.baobuzz.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.msdc.baobuzz.interfaces.CoachResult
+import com.msdc.baobuzz.models.Coach
 import com.msdc.baobuzz.repository.CoachRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,8 @@ class CoachViewModel @Inject constructor(
                     when (val result = repository.getCoach(id)) {
                         is CoachResult.Success -> result.data
                         is CoachResult.Error -> {
-                            _uiState.value = CoachUiState.Error(result.exception.message ?: "Unknown error")
+                            _uiState.value =
+                                CoachUiState.Error(result.exception.message ?: "Unknown error")
                             null
                         }
                     }

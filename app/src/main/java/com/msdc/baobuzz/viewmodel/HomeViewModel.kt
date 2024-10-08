@@ -1,8 +1,10 @@
-package com.msdc.baobuzz.models
+package com.msdc.baobuzz.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.msdc.baobuzz.models.LeagueInfo
+import com.msdc.baobuzz.models.LeagueInfoProvider
 
 
 class HomeViewModel(

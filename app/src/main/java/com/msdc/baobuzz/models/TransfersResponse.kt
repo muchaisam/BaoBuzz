@@ -36,8 +36,3 @@ data class TransfersResponse(
     val paging: Paging,
     val response: List<ApiTransfer>
 )
-
-data class Paging(
-    val current: Int,
-    val total: Int
-)

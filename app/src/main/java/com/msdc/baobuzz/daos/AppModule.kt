@@ -1,11 +1,17 @@
 package com.msdc.baobuzz.daos
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.msdc.baobuzz.api.ApiClient
 import com.msdc.baobuzz.interfaces.FootballApi
 import com.msdc.baobuzz.repository.CoachRepository
+import com.msdc.baobuzz.repository.LeagueRepository
+import com.msdc.baobuzz.repository.TeamRepository
 import com.msdc.baobuzz.repository.TransfersRepository
+import com.msdc.baobuzz.repository.UserPreferencesRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +21,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Named
 import javax.inject.Singleton
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -64,5 +72,29 @@ object AppModule {
     @Singleton
     fun provideCoachRepository(api: FootballApi, coachDao: CoachDao): CoachRepository {
         return CoachRepository(api, coachDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return context.dataStore
+    }
+
+    @Provides
+    @Singleton
+    fun provideLeagueRepository(api: FootballApi, db: AppDatabase): LeagueRepository {
+        return LeagueRepository(api, db)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTeamRepository(api: FootballApi, db: AppDatabase): TeamRepository {
+        return TeamRepository(api, db)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserPreferencesRepository(dataStore: DataStore<Preferences>): UserPreferencesRepository {
+        return UserPreferencesRepository(dataStore)
     }
 }

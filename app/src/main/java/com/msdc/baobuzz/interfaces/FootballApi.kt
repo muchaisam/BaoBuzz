@@ -3,7 +3,9 @@ package com.msdc.baobuzz.interfaces
 import com.msdc.baobuzz.models.ApiResponse
 import com.msdc.baobuzz.models.Coach
 import com.msdc.baobuzz.models.FixturesResponse
+import com.msdc.baobuzz.models.LeagueWrapper
 import com.msdc.baobuzz.models.StandingsResponse
+import com.msdc.baobuzz.models.TeamWrapper
 import com.msdc.baobuzz.models.TransfersResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -28,5 +30,17 @@ interface FootballApi {
 
     @GET("coachs")
     suspend fun getCoach(@Query("id") id: Int): ApiResponse<Coach>
+
+    @GET("leagues")
+    suspend fun getLeague(
+        @Query("id") id: Int,
+        @Query("current") current: Boolean = true
+    ): ApiResponse<LeagueWrapper>
+
+    @GET("teams")
+    suspend fun getTeams(
+        @Query("league") league: Int,
+        @Query("season") season: Int
+    ): ApiResponse<TeamWrapper>
 
 }

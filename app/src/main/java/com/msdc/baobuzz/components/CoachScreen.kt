@@ -60,10 +60,11 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.msdc.baobuzz.models.CareerStep
 import com.msdc.baobuzz.models.Coach
-import com.msdc.baobuzz.models.CoachUiState
+import com.msdc.baobuzz.viewmodel.CoachUiState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.msdc.baobuzz.R
-import com.msdc.baobuzz.models.CoachViewModel
+import com.msdc.baobuzz.ux.Typography
+import com.msdc.baobuzz.viewmodel.CoachViewModel
 
 @Composable
 fun CoachCareerViewer(
@@ -137,9 +138,9 @@ fun CoachCard(
                     .clip(CircleShape)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = coach.name, style = MaterialTheme.typography.h6.copy(fontFamily = AppFontFamily.Gabarito))
-            Text(text = coach.team.name, style = MaterialTheme.typography.body2.copy(fontFamily = AppFontFamily.Gabarito))
-            Text(text = "Age: ${coach.age}", style = MaterialTheme.typography.body2.copy(fontFamily = AppFontFamily.Gabarito))
+            Text(text = coach.name, style = Typography.h5)
+            Text(text = coach.team.name, style = Typography.body2)
+            Text(text = "Age: ${coach.age}", style = Typography.body2)
         }
     }
 
@@ -191,7 +192,7 @@ fun CoachDetailsDialog(
                 ) {
                     Text(
                         text = "Managerial History",
-                        style = MaterialTheme.typography.h5.copy(fontFamily = AppFontFamily.Gabarito)
+                        style = Typography.h5
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CareerTimeline(coach.career)
@@ -376,7 +377,7 @@ fun CareerStepItem(step: CareerStep) {
             ) {
                 Text(
                     text = step.team.name,
-                    style = MaterialTheme.typography.h6.copy(fontFamily = AppFontFamily.Gabarito)
+                    style = Typography.h5
                 )
                 Icon(
                     imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,

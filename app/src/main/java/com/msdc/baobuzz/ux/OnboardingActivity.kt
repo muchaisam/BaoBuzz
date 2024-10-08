@@ -12,11 +12,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.view.children
 import androidx.viewpager2.widget.ViewPager2
-import com.msdc.baobuzz.HomeActivity
 import com.msdc.baobuzz.R
 import com.msdc.baobuzz.adapter.OnboardingAdapter
 import com.msdc.baobuzz.databinding.ActivityOnboardingBinding
 import com.msdc.baobuzz.models.OnboardingItem
+import com.msdc.baobuzz.ui.LeagueSelectionActivity
 
 class OnboardingActivity : AppCompatActivity() {
 
@@ -115,7 +115,7 @@ class OnboardingActivity : AppCompatActivity() {
         getSharedPreferences("Onboarding", Context.MODE_PRIVATE).edit {
             putBoolean("Shown", true)
         }
-        startActivity(Intent(this, HomeActivity::class.java))
+        startActivity(Intent(this, LeagueSelectionActivity::class.java))
         finish()
     }
 }

@@ -6,11 +6,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.msdc.baobuzz.entity.CachedStanding
+import com.msdc.baobuzz.models.CachedTopAssisters
+import com.msdc.baobuzz.models.CachedTopScorers
 import com.msdc.baobuzz.models.CareerStepListConverter
 import com.msdc.baobuzz.models.Coach
+import com.msdc.baobuzz.models.League
+import com.msdc.baobuzz.models.Team
 import com.msdc.baobuzz.models.TeamConverter
 
-@Database(entities = [CachedFixture::class, Transfer::class, CachedStanding::class, Coach::class],
+@Database(entities = [CachedFixture::class, Transfer::class,
+    CachedStanding::class, Coach::class,
+    League::class, Team::class,
+    CachedTopScorers::class, CachedTopAssisters::class],
     version = 1,
     exportSchema = false
 )
@@ -22,6 +29,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun standingsDao(): StandingsDao
 
     abstract fun coachDao(): CoachDao
+
+    abstract fun leagueDao(): LeagueDao
+    abstract fun teamDao(): TeamDao
+
+    abstract fun topAssistersDao(): TopAssistersDao
+
+    abstract fun topScorersDao(): TopScorersDao
 
     companion object {
         @Volatile

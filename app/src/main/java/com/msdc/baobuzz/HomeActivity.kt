@@ -11,15 +11,10 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import androidx.work.Configuration
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import com.msdc.baobuzz.workmanager.CoachUpdateWorker
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.msdc.baobuzz.workmanager.FixtureWorker
 import com.msdc.baobuzz.workmanager.StandingsUpdateWorker
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -68,21 +63,21 @@ class HomeActivity : AppCompatActivity() {
         StandingsUpdateWorker.schedule(applicationContext)
 
         FixtureWorker.schedule(this)
-        setupPeriodicCoachUpdate()
+//        setupPeriodicCoachUpdate()
 //        scheduleLiveScoreUpdates()
     }
 
-    private fun setupPeriodicCoachUpdate() {
-        val updateRequest = PeriodicWorkRequestBuilder<CoachUpdateWorker>(
-            7, TimeUnit.DAYS
-        ).build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "coach_update",
-            ExistingPeriodicWorkPolicy.KEEP,
-            updateRequest
-        )
-    }
+//    private fun setupPeriodicCoachUpdate() {
+//        val updateRequest = PeriodicWorkRequestBuilder<CoachUpdateWorker>(
+//            7, TimeUnit.DAYS
+//        ).build()
+//
+//        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+//            "coach_update",
+//            ExistingPeriodicWorkPolicy.KEEP,
+//            updateRequest
+//        )
+//    }
 
 //    fun scheduleLiveScoreUpdates() {
 //        val constraints = Constraints.Builder()
