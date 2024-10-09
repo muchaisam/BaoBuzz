@@ -1,21 +1,18 @@
 package com.msdc.baobuzz.components.stats
 
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.Card
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,6 +29,7 @@ fun MiniStandingsList(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(max = 300.dp)
             .padding(16.dp),
         elevation = 2.dp
     ) {
@@ -43,12 +41,6 @@ fun MiniStandingsList(
             )
             standings?.league?.standings?.firstOrNull()?.take(5)?.forEach { standing ->
                 MiniStandingItem(standing)
-            }
-            TextButton(
-                onClick = onViewFullStandings,
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Text("View Full Standings")
             }
         }
     }
