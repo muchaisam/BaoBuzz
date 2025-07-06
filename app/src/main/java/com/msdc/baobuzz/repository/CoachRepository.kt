@@ -1,11 +1,11 @@
 package com.msdc.baobuzz.repository
 
+import com.msdc.baobuzz.daos.CoachDao
 import com.msdc.baobuzz.interfaces.FootballApi
 import com.msdc.baobuzz.models.Coach
-import com.msdc.baobuzz.daos.CoachDao
-import com.msdc.baobuzz.interfaces.CoachResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,36 +14,41 @@ class CoachRepository @Inject constructor(
     private val apiService: FootballApi,
     private val coachDao: CoachDao
 ) {
-    suspend fun getCoach(id: Int): CoachResult<Coach> = withContext(Dispatchers.IO) {
-        try {
-            val cachedCoach = coachDao.getCoach(id)
-            if (cachedCoach != null && !isDataStale(cachedCoach.lastUpdated)) {
-                return@withContext CoachResult.Success(cachedCoach)
-            }
-
-            val apiResponse = apiService.getCoach(id)
-            if (apiResponse.response.isNotEmpty()) {
-                val remoteCoach = apiResponse.response.first()
-                coachDao.insertCoach(remoteCoach)
-                CoachResult.Success(remoteCoach)
-            } else {
-                CoachResult.Error(Exception("Coach not found"))
-            }
-        } catch (e: Exception) {
-            CoachResult.Error(e)
-        }
+    companion object {
+        private const val CACHE_DURATION = 30 * 24 * 60 * 60 * 1000L // 30 days for free tier
     }
 
-    suspend fun getAllCachedCoaches(): List<Coach> = coachDao.getAllCoaches()
+    suspend fun getCoaches(ids: List<Int>): List<Coach> = coroutineScope {
+        val cachedCoaches = coachDao.getCoachesByIds(ids)
+        val validCachedCoaches = cachedCoaches.filter { !isDataStale(it.lastUpdated) }
+        val missingIds = ids.filter { id -> validCachedCoaches.none { it.id == id } }
+
+        if (missingIds.isEmpty()) {
+            return@coroutineScope validCachedCoaches
+        }
+
+        val deferredCoaches = missingIds.map { id ->
+            async {
+                try {
+                    val response = apiService.getCoach(id)
+                    if (response.response.isNotEmpty()) {
+                        response.response.first()
+                    } else null
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+
+        val newCoaches = deferredCoaches.awaitAll().filterNotNull()
+        if (newCoaches.isNotEmpty()) {
+            coachDao.insertCoaches(newCoaches)
+        }
+
+        validCachedCoaches + newCoaches
+    }
 
     private fun isDataStale(lastUpdated: Long): Boolean {
-        val oneWeekInMillis = 7 * 24 * 60 * 60 * 1000
-        return System.currentTimeMillis() - lastUpdated > oneWeekInMillis
+        return System.currentTimeMillis() - lastUpdated > CACHE_DURATION
     }
-}
-
-
-sealed class Result<out T> {
-    data class Success<out T>(val data: T) : Result<T>()
-    data class Error(val exception: Exception) : Result<Nothing>()
 }
