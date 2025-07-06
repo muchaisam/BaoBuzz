@@ -7,7 +7,7 @@ import com.msdc.baobuzz.models.League
  * Static data for popular football leagues with real API IDs and logo URLs
  */
 object LeagueData {
-    
+
     fun getPopularLeagues(): List<League> = listOf(
         League(
             id = 39,
@@ -16,27 +16,27 @@ object LeagueData {
             country = "England",
             logo = "https://media.api-sports.io/football/leagues/39.png",
             flag = "https://media.api-sports.io/flags/gb.svg",
-            season = 2024,
+            season = 2023,
             round = null
         ),
         League(
             id = 140,
             name = "La Liga",
-            type = "League", 
+            type = "League",
             country = "Spain",
             logo = "https://media.api-sports.io/football/leagues/140.png",
             flag = "https://media.api-sports.io/flags/es.svg",
-            season = 2024,
+            season = 2023,
             round = null
         ),
         League(
             id = 78,
             name = "Bundesliga",
             type = "League",
-            country = "Germany", 
+            country = "Germany",
             logo = "https://media.api-sports.io/football/leagues/78.png",
             flag = "https://media.api-sports.io/flags/de.svg",
-            season = 2024,
+            season = 2023,
             round = null
         ),
         League(
@@ -44,9 +44,9 @@ object LeagueData {
             name = "Serie A",
             type = "League",
             country = "Italy",
-            logo = "https://media.api-sports.io/football/leagues/135.png", 
+            logo = "https://media.api-sports.io/football/leagues/135.png",
             flag = "https://media.api-sports.io/flags/it.svg",
-            season = 2024,
+            season = 2023,
             round = null
         ),
         League(
@@ -56,11 +56,11 @@ object LeagueData {
             country = "France",
             logo = "https://media.api-sports.io/football/leagues/61.png",
             flag = "https://media.api-sports.io/flags/fr.svg",
-            season = 2024,
+            season = 2023,
             round = null
         )
     )
-    
+
     /**
      * Extended league information for onboarding UI
      */
@@ -70,7 +70,7 @@ object LeagueData {
         val description: String,
         val isPopular: Boolean = true
     )
-    
+
     fun getOnboardingLeagues(): List<OnboardingLeague> = listOf(
         OnboardingLeague(
             league = getPopularLeagues()[0], // Premier League
@@ -98,15 +98,15 @@ object LeagueData {
             description = "Emerging talents and exciting gameplay"
         )
     )
-    
+
     /**
      * Get league by ID
      */
     fun getLeagueById(id: Int): League? = getPopularLeagues().find { it.id == id }
-    
+
     /**
      * Get onboarding league by ID
      */
-    fun getOnboardingLeagueById(id: Int): OnboardingLeague? = 
+    fun getOnboardingLeagueById(id: Int): OnboardingLeague? =
         getOnboardingLeagues().find { it.league.id == id }
 }
