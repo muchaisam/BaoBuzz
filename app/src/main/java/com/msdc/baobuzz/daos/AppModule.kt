@@ -5,7 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
-import com.msdc.baobuzz.api.ApiClient
 import com.msdc.baobuzz.interfaces.FootballApi
 import com.msdc.baobuzz.repository.CoachRepository
 import com.msdc.baobuzz.repository.LeagueRepository
@@ -29,16 +28,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 object AppModule {
     @Provides
     @Singleton
-    fun provideFootballApi(): FootballApi = ApiClient.footballApi
-
-    @Provides
-    @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "football_database"
-        ).build()
+        return Room.databaseBuilder(context, AppDatabase::class.java, "football_database").build()
     }
 
     @Provides
@@ -76,12 +67,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
-        return context.dataStore
-    }
-
-    @Provides
-    @Singleton
     fun provideLeagueRepository(api: FootballApi, db: AppDatabase): LeagueRepository {
         return LeagueRepository(api, db)
     }
@@ -94,7 +79,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserPreferencesRepository(dataStore: DataStore<Preferences>): UserPreferencesRepository {
+    fun provideUserPreferencesRepository(
+        dataStore: DataStore<Preferences>
+    ): UserPreferencesRepository {
         return UserPreferencesRepository(dataStore)
     }
 }
