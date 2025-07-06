@@ -12,7 +12,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 private val Context.dataStore: DataStore<Preferences> by
-        preferencesDataStore(name = "baobuzz_preferences")
+preferencesDataStore(name = "baobuzz_preferences")
 
 @Module
 @InstallIn(SingletonComponent::class)
