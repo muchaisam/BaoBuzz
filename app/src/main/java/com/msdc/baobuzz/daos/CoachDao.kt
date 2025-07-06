@@ -8,12 +8,9 @@ import com.msdc.baobuzz.models.Coach
 
 @Dao
 interface CoachDao {
-    @Query("SELECT * FROM coach WHERE id = :id")
-    fun getCoach(id: Int): Coach?
-
-    @Query("SELECT * FROM coach")
-    fun getAllCoaches(): List<Coach>
+    @Query("SELECT * FROM coach WHERE id IN (:ids)")
+    suspend fun getCoachesByIds(ids: List<Int>): List<Coach>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertCoach(coach: Coach)
+    suspend fun insertCoaches(coaches: List<Coach>)
 }
