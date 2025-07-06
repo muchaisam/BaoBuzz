@@ -14,10 +14,11 @@ import com.msdc.baobuzz.models.League
 import com.msdc.baobuzz.models.Team
 import com.msdc.baobuzz.models.TeamConverter
 
-@Database(entities = [CachedFixture::class, Transfer::class,
-    CachedStanding::class, Coach::class,
-    League::class, Team::class,
-    CachedTopScorers::class, CachedTopAssisters::class],
+@Database(
+    entities = [CachedFixture::class, Transfer::class,
+        CachedStanding::class, Coach::class,
+        League::class, Team::class,
+        CachedTopScorers::class, CachedTopAssisters::class],
     version = 1,
     exportSchema = false
 )
