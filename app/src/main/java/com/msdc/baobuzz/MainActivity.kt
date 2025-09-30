@@ -16,9 +16,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen before calling super.onCreate()
         val splashScreen = installSplashScreen()
-        
+
         super.onCreate(savedInstanceState)
-        
+
         setContent {
             BaoBuzzTheme {
                 Surface(
