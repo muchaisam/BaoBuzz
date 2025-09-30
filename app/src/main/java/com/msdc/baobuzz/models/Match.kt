@@ -7,9 +7,9 @@ data class Match(
     val homeTeam: Team,
     val awayTeam: Team,
     val date: String,
-    val status : String,
+    val status: String,
     val league: String,
-    val score : Score
+    val score: Score
 )
 
 @Serializable
