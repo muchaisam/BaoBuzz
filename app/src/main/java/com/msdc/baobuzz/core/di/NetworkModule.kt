@@ -1,8 +1,8 @@
 package com.msdc.baobuzz.core.di
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.msdc.baobuzz.core.api.AuthInterceptor
-import com.msdc.baobuzz.core.api.FootballRepository
-import com.msdc.baobuzz.core.api.FootballRepositoryImpl
 import com.msdc.baobuzz.core.api.RequestLimitInterceptor
 import com.msdc.baobuzz.interfaces.FootballApi
 import dagger.Module
@@ -24,6 +24,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideGson(): Gson {
+        return GsonBuilder().setLenient().create()
+    }
+
+    @Provides
+    @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
         requestLimitInterceptor: RequestLimitInterceptor
@@ -32,9 +38,7 @@ object NetworkModule {
             .addInterceptor(authInterceptor)
             .addInterceptor(requestLimitInterceptor)
             .addInterceptor(
-                HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
-                }
+                HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
             )
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -44,11 +48,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 
@@ -56,11 +60,5 @@ object NetworkModule {
     @Singleton
     fun provideFootballApi(retrofit: Retrofit): FootballApi {
         return retrofit.create(FootballApi::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideFootballRepository(impl: FootballRepositoryImpl): FootballRepository {
-        return impl
     }
 }
