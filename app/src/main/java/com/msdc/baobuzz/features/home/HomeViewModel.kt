@@ -9,7 +9,7 @@ import com.msdc.baobuzz.core.models.LeagueStanding
 import com.msdc.baobuzz.core.models.LiveMatch
 import com.msdc.baobuzz.core.models.PlayerStat
 import com.msdc.baobuzz.core.models.RecentResult
-import com.msdc.baobuzz.core.models.Transfer
+import com.msdc.baobuzz.core.models.TransferDetails
 import com.msdc.baobuzz.core.models.UpcomingFixture
 import com.msdc.baobuzz.models.League
 import com.msdc.baobuzz.repository.UserPreferencesRepository
@@ -190,7 +190,7 @@ sealed class HomeUiState {
     /** Successful state with football data */
     data class Success(
         val liveMatches: List<LiveMatch>,
-        val recentTransfers: List<Transfer>,
+        val recentTransfers: List<TransferDetails>,
         val leagueStandings: List<LeagueStanding>,
         val selectedLeagues: List<League>,
         val upcomingFixtures: List<UpcomingFixture> = emptyList(),
