@@ -68,9 +68,11 @@ fun SettingsScreen(
     var showClearDataDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
