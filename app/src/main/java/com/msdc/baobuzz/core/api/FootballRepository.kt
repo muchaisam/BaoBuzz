@@ -5,13 +5,14 @@ import com.msdc.baobuzz.core.models.*
 import com.msdc.baobuzz.interfaces.FootballApi
 import com.msdc.baobuzz.models.ApiTransfer
 import com.msdc.baobuzz.models.PlayerStatResponse
+import com.msdc.baobuzz.models.TransferDetail
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.msdc.baobuzz.models.Fixture as ApiFixture
 
 interface FootballRepository {
     suspend fun getLiveMatches(leagueIds: List<Int>): List<LiveMatch>
-    suspend fun getRecentTransfers(leagueIds: List<Int>): List<Transfer>
+    suspend fun getRecentTransfers(leagueIds: List<Int>): List<TransferDetails>
     suspend fun getLeagueStandings(leagueId: Int): LeagueStanding?
     suspend fun getFixtures(leagueId: Int, from: String, to: String): List<Fixture>
     suspend fun getPlayerStats(leagueId: Int): List<PlayerStat>
@@ -23,6 +24,7 @@ interface FootballRepository {
     suspend fun getRecentResults(leagueIds: List<Int>, limit: Int = 10): List<RecentResult>
     suspend fun getSeasonSummary(leagueId: Int, season: Int? = null): SeasonSummary?
     suspend fun getLeagueInsights(leagueIds: List<Int>): List<LeagueInsight>
+    suspend fun getTransfersByTeam(teamId: Int): List<TransferDetails>
 }
 
 @Singleton
@@ -38,7 +40,7 @@ constructor(
         return try {
             // Check cache first
             cache.getLiveMatches()?.let { cachedMatches ->
-                return cachedMatches.filter { match ->
+                return@getLiveMatches cachedMatches.filter { match ->
                     leagueIds.any { leagueId ->
                         match.homeTeam.id.toString().contains(leagueId.toString()) ||
                                 match.awayTeam.id.toString().contains(leagueId.toString())
@@ -95,18 +97,18 @@ constructor(
         }
     }
 
-    override suspend fun getRecentTransfers(leagueIds: List<Int>): List<Transfer> {
+    override suspend fun getRecentTransfers(leagueIds: List<Int>): List<TransferDetails> {
         return try {
             // Check cache first
             cache.getTransfers()?.let { cachedTransfers ->
-                return cachedTransfers
+                return@getRecentTransfers cachedTransfers
             }
 
             if (!apiRequestTracker.canMakeRequest()) {
                 return emptyList()
             }
 
-            val transfers = mutableListOf<Transfer>()
+            val transfers = mutableListOf<TransferDetails>()
 
             leagueIds.forEach { leagueId ->
                 val response =
@@ -117,42 +119,17 @@ constructor(
                 response.response?.take(10)?.forEach { transferResponse: ApiTransfer ->
                     // For each transfer response, iterate through the transfer details
                     transferResponse.transfers.forEach { transferDetail ->
-                        transfers.add(
-                            Transfer(
-                                id = "${transferResponse.player.id}_${transferDetail.date}",
-                                player =
-                                Player(
-                                    id = transferResponse.player.id,
-                                    name = transferResponse.player.name,
-                                    photo = null // API player model doesn't
-                                    // have photo
-                                ),
-                                fromTeam =
-                                transferDetail.teams.out?.let { team ->
-                                    Team(
-                                        id = team.id,
-                                        name = team.name,
-                                        logo = team.logo
-                                    )
-                                },
-                                toTeam =
-                                Team(
-                                    id = transferDetail.teams.`in`.id,
-                                    name = transferDetail.teams.`in`.name,
-                                    logo = transferDetail.teams.`in`.logo
-                                ),
-                                transferType = transferDetail.type,
-                                date = transferDetail.date,
-                                fee = null // API doesn't always provide fee
-                            )
-                        )
+                        transfers.add(convertToTransferDetails(transferResponse, transferDetail))
                     }
                 }
 
                 apiRequestTracker.recordRequest()
             }
 
-            val distinctTransfers = transfers.distinctBy { it.id }.sortedByDescending { it.date }
+            val distinctTransfers =
+                transfers.distinctBy { "${it.player.id}_${it.date}" }.sortedByDescending {
+                    it.date
+                }
 
             // Cache the results
             cache.cacheTransfers(distinctTransfers)
@@ -166,7 +143,7 @@ constructor(
         return try {
             // Check cache first
             cache.getStandings(leagueId)?.let { cachedStanding ->
-                return cachedStanding
+                return@getLeagueStandings cachedStanding
             }
 
             if (!apiRequestTracker.canMakeRequest()) {
@@ -226,7 +203,7 @@ constructor(
 
             // Check cache first
             cache.getFixtures(cacheKey)?.let { cachedFixtures ->
-                return cachedFixtures
+                return@getFixtures cachedFixtures
             }
 
             if (!apiRequestTracker.canMakeRequest()) {
@@ -280,7 +257,7 @@ constructor(
         return try {
             // Check cache first
             cache.getTopScorers(leagueId)?.let { cachedStats ->
-                return cachedStats
+                return@getPlayerStats cachedStats
             }
 
             if (!apiRequestTracker.canMakeRequest()) {
@@ -295,9 +272,9 @@ constructor(
                         player =
                         Player(
                             id = playerResponse.player.id,
-                            name = playerResponse.player.name,
-                            photo = playerResponse.player.photo
+                            name = playerResponse.player.name
                         ),
+                        photo = playerResponse.player.photo,
                         team =
                         Team(
                             id =
@@ -351,7 +328,7 @@ constructor(
         return try {
             // Check cache first
             cache.getUpcomingFixtures()?.let { cachedFixtures ->
-                return cachedFixtures
+                return@getUpcomingFixtures cachedFixtures
                     .filter { fixture -> leagueIds.contains(fixture.leagueId) }
                     .take(limit)
             }
@@ -417,7 +394,7 @@ constructor(
         return try {
             // Check cache first
             cache.getRecentResults()?.let { cachedResults ->
-                return cachedResults
+                return@getRecentResults cachedResults
                     .filter { result -> leagueIds.contains(result.leagueId) }
                     .take(limit)
             }
@@ -525,7 +502,9 @@ constructor(
         return try {
             // Check cache first
             cache.getLeagueInsights()?.let { cachedInsights ->
-                return cachedInsights.filter { insight -> leagueIds.contains(insight.leagueId) }
+                return@getLeagueInsights cachedInsights.filter { insight ->
+                    leagueIds.contains(insight.leagueId)
+                }
             }
 
             val insights = mutableListOf<LeagueInsight>()
@@ -564,7 +543,66 @@ constructor(
         }
     }
 
+    override suspend fun getTransfersByTeam(teamId: Int): List<TransferDetails> {
+        return try {
+            // Check cache first
+            cache.getTransfers(teamId.toString())?.let { cachedTransfers ->
+                return@getTransfersByTeam cachedTransfers
+            }
+
+            if (!apiRequestTracker.canMakeRequest()) {
+                return emptyList()
+            }
+
+            val response = footballApi.getTransfersByTeam(team = teamId)
+
+            val transfers =
+                response.response?.flatMap { transferResponse ->
+                    transferResponse.transfers.map { transferDetail ->
+                        convertToTransferDetails(transferResponse, transferDetail)
+                    }
+                }
+                    ?: emptyList()
+
+            apiRequestTracker.recordRequest()
+
+            // Cache the results
+            cache.cacheTransfers(teamId.toString(), transfers)
+            transfers
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    // Utility methods to convert between models
+    private fun convertToTransferDetails(
+        transferResponse: ApiTransfer,
+        transferDetail: TransferDetail
+    ): TransferDetails {
+        return TransferDetails(
+            date = transferDetail.date,
+            type = transferDetail.type,
+            teamIn =
+            TeamDetails(
+                id = transferDetail.teams.`in`.id,
+                name = transferDetail.teams.`in`.name,
+                logo = transferDetail.teams.`in`.logo
+            ),
+            teamOut =
+            TeamDetails(
+                id = transferDetail.teams.out.id,
+                name = transferDetail.teams.out.name,
+                logo = transferDetail.teams.out.logo
+            ),
+            player =
+            PlayerDetails(
+                id = transferResponse.player.id,
+                name = transferResponse.player.name
+            )
+        )
+    }
+
     private fun getCurrentSeason(): Int {
-        return 2023 // Current season
+        return java.time.LocalDate.now().year
     }
 }
