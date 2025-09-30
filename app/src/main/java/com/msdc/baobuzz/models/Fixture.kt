@@ -25,6 +25,7 @@ data class Event(
     val type: String,
     val detail: String
 )
+
 @Serializable
 data class EventTime(
     val elapsed: Int,
@@ -46,6 +47,7 @@ data class TeamCoach(
     val name: String,
     val photo: String?
 )
+
 @Serializable
 data class Statistic(
     val team: Team,
