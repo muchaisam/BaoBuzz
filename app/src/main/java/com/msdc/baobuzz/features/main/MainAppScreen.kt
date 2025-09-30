@@ -111,7 +111,7 @@ fun MainAppScreen(navController: NavHostController = rememberNavController()) {
                 )
             }
 
-            composable(BaoBuzzRoutes.LEAGUES) { LeaguesScreen() }
+            composable(BaoBuzzRoutes.LEAGUES) { LeaguesScreen(navController = navController) }
 
             composable(BaoBuzzRoutes.STATS) { StatsScreen() }
 
