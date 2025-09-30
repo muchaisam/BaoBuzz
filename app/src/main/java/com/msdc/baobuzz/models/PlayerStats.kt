@@ -1,4 +1,5 @@
 package com.msdc.baobuzz.models
+
 data class PlayerStats(
     val player: PlayerStat,
     val statistics: List<Statistics>
