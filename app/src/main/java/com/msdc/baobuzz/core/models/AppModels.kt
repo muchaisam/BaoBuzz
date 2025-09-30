@@ -15,19 +15,19 @@ data class LiveMatch(
     val minute: Int?
 )
 
-data class Transfer(
+data class TransferLegacy(
     val id: String,
-    val player: Player,
-    val fromTeam: Team?,
-    val toTeam: Team,
+    val player: PlayerLegacy,
+    val fromTeam: TeamLegacy?,
+    val toTeam: TeamLegacy,
     val transferType: String,
     val date: String,
     val fee: String?
 )
 
-data class Team(val id: Int, val name: String, val logo: String)
+data class TeamLegacy(val id: Int, val name: String, val logo: String)
 
-data class Player(val id: Int, val name: String, val photo: String?)
+data class PlayerLegacy(val id: Int, val name: String, val photo: String?)
 
 data class LeagueStanding(
     val leagueId: Int,
@@ -62,7 +62,8 @@ data class PlayerStat(
     val team: Team,
     val goals: Int,
     val assists: Int,
-    val appearances: Int
+    val appearances: Int,
+    val photo: String? = null
 )
 
 // Enhanced models for richer home screen content
