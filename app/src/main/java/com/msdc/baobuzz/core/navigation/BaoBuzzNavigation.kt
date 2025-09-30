@@ -9,15 +9,11 @@ import com.msdc.baobuzz.features.main.MainAppScreen
 import com.msdc.baobuzz.features.onboarding.OnboardingLeagueSelectionScreen
 import com.msdc.baobuzz.features.onboarding.OnboardingWelcomeScreen
 import com.msdc.baobuzz.features.splash.SplashScreen
+import com.msdc.baobuzz.presentation.transfers.TransfersScreen
 
 @Composable
-fun BaoBuzzNavigation(
-    navController: NavHostController = rememberNavController()
-) {
-    NavHost(
-        navController = navController,
-        startDestination = BaoBuzzRoutes.SPLASH
-    ) {
+fun BaoBuzzNavigation(navController: NavHostController = rememberNavController()) {
+    NavHost(navController = navController, startDestination = BaoBuzzRoutes.SPLASH) {
         // Splash Screen
         composable(BaoBuzzRoutes.SPLASH) {
             SplashScreen(
@@ -37,9 +33,7 @@ fun BaoBuzzNavigation(
         // Onboarding Welcome
         composable(BaoBuzzRoutes.ONBOARDING_WELCOME) {
             OnboardingWelcomeScreen(
-                onContinue = {
-                    navController.navigate(BaoBuzzRoutes.ONBOARDING_LEAGUES)
-                }
+                onContinue = { navController.navigate(BaoBuzzRoutes.ONBOARDING_LEAGUES) }
             )
         }
 
@@ -53,15 +47,19 @@ fun BaoBuzzNavigation(
                         popUpTo(BaoBuzzRoutes.ONBOARDING_WELCOME) { inclusive = true }
                     }
                 },
-                onBack = {
-                    navController.popBackStack()
-                }
+                onBack = { navController.popBackStack() }
             )
         }
 
         // Main App
-        composable(BaoBuzzRoutes.MAIN_APP) {
-            MainAppScreen()
+        composable(BaoBuzzRoutes.MAIN_APP) { MainAppScreen() }
+
+        // Transfers Screen
+        composable(BaoBuzzRoutes.TRANSFERS) {
+            val teamId = it.arguments?.getString("teamId")?.toIntOrNull()
+            if (teamId != null) {
+                TransfersScreen(teamId = teamId, navController = navController)
+            }
         }
     }
 }
