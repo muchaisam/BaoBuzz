@@ -1,8 +1,6 @@
 package com.msdc.baobuzz.core.navigation
 
-/**
- * Navigation routes for the app
- */
+/** Navigation routes for the app */
 object BaoBuzzRoutes {
     const val SPLASH = "splash"
     const val ONBOARDING_WELCOME = "onboarding_welcome"
@@ -16,5 +14,5 @@ object BaoBuzzRoutes {
     const val LEAGUES = "leagues"
     const val STATS = "stats"
     const val SETTINGS = "settings"
-
+    const val TRANSFERS = "transfers/{teamId}"
 }
