@@ -40,7 +40,8 @@ class TeamConverter {
     fun fromTeam(team: TeamManaged): String = Gson().toJson(team)
 
     @TypeConverter
-    fun toTeam(teamString: String): TeamManaged = Gson().fromJson(teamString, TeamManaged::class.java)
+    fun toTeam(teamString: String): TeamManaged =
+        Gson().fromJson(teamString, TeamManaged::class.java)
 }
 
 class CareerStepListConverter {
