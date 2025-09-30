@@ -1,5 +1,6 @@
 package com.msdc.baobuzz.features.leagues
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,21 +38,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.msdc.baobuzz.core.models.Fixture
 import com.msdc.baobuzz.core.models.LeagueStanding
-import com.msdc.baobuzz.core.models.Transfer
+import com.msdc.baobuzz.core.models.TransferDetails
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LeaguesScreen(viewModel: LeaguesViewModel = hiltViewModel()) {
+fun LeaguesScreen(
+    navController: NavHostController, // Add NavController
+    viewModel: LeaguesViewModel = hiltViewModel()
+) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
         // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -84,7 +87,8 @@ fun LeaguesScreen(viewModel: LeaguesViewModel = hiltViewModel()) {
                 SuccessState(
                     standings = state.standings,
                     fixtures = state.fixtures,
-                    transfers = state.transfers
+                    transfers = state.transfers,
+                    navController = navController // Pass NavController
                 )
             }
         }
@@ -149,7 +153,8 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
 private fun SuccessState(
     standings: List<LeagueStanding>,
     fixtures: List<Fixture>,
-    transfers: List<Transfer>
+    transfers: List<Transfer>,
+    navController: NavHostController // Add NavController
 ) {
     if (standings.isEmpty()) {
         EmptyState(
@@ -169,7 +174,12 @@ private fun SuccessState(
                 )
             }
 
-            items(standings) { standing -> LeagueStandingsCard(standing = standing) }
+            items(standings) { standing ->
+                LeagueStandingsCard(
+                    standing = standing,
+                    onTeamClick = { teamId -> navController.navigate("transfers/$teamId") }
+                )
+            }
 
             // Upcoming Fixtures Section
             if (fixtures.isNotEmpty()) {
@@ -308,7 +318,7 @@ private fun FixtureCard(fixture: Fixture) {
 }
 
 @Composable
-private fun TransferCard(transfer: Transfer) {
+private fun TransferCard(transfer: TransferDetails) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -327,24 +337,16 @@ private fun TransferCard(transfer: Transfer) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (transfer.fromTeam != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        AsyncImage(
-                            model = transfer.fromTeam.logo,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = transfer.fromTeam.name,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = transfer.teamOut.logo,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Free Agent",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = transfer.teamOut.name,
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
 
@@ -357,12 +359,12 @@ private fun TransferCard(transfer: Transfer) {
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AsyncImage(
-                        model = transfer.toTeam.logo,
+                        model = transfer.teamIn.logo,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = transfer.toTeam.name, style = MaterialTheme.typography.bodySmall)
+                    Text(text = transfer.teamIn.name, style = MaterialTheme.typography.bodySmall)
                 }
             }
 
@@ -378,7 +380,10 @@ private fun TransferCard(transfer: Transfer) {
 }
 
 @Composable
-private fun LeagueStandingsCard(standing: LeagueStanding) {
+private fun LeagueStandingsCard(
+    standing: LeagueStanding,
+    onTeamClick: (Int) -> Unit // Add onTeamClick callback
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -463,9 +468,13 @@ private fun LeagueStandingsCard(standing: LeagueStanding) {
             // Top teams (show top 10)
             standing.topTeams.take(10).forEach { teamStanding ->
                 Row(
-                    modifier = Modifier
+                    modifier =
+                    Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .clickable {
+                            onTeamClick(teamStanding.team.id)
+                        }, // Handle click
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -523,54 +532,17 @@ private fun LeagueStandingsCard(standing: LeagueStanding) {
                     Text(
                         text = teamStanding.points.toString(),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(32.dp),
-                        textAlign = TextAlign.Center
+                        fontWeight = FontWeight.Bold
                     )
 
-                    // Played
-                    Text(
-                        text = teamStanding.played.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.width(24.dp),
-                        textAlign = TextAlign.Center
-                    )
-
-                    // Won
-                    Text(
-                        text = teamStanding.won.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.width(24.dp),
-                        textAlign = TextAlign.Center
-                    )
-
-                    // Drawn
-                    Text(
-                        text = teamStanding.drawn.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.width(24.dp),
-                        textAlign = TextAlign.Center
-                    )
-
-                    // Lost
-                    Text(
-                        text = teamStanding.lost.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.width(24.dp),
-                        textAlign = TextAlign.Center
+                    // View Transfers Icon
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = "View Transfers",
+                        modifier = Modifier.padding(start = 8.dp)
                     )
                 }
-            }
-
-            if (standing.topTeams.size > 10) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Showing top 10 teams",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                HorizontalDivider(thickness = 0.5.dp)
             }
         }
     }
