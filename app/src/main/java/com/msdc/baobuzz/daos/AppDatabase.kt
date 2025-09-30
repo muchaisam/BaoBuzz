@@ -15,17 +15,21 @@ import com.msdc.baobuzz.models.Team
 import com.msdc.baobuzz.models.TeamConverter
 
 @Database(
-    entities = [CachedFixture::class, Transfer::class,
-        CachedStanding::class, Coach::class,
-        League::class, Team::class,
-        CachedTopScorers::class, CachedTopAssisters::class],
+    entities =
+    [
+        CachedFixture::class,
+        CachedStanding::class,
+        Coach::class,
+        League::class,
+        Team::class,
+        CachedTopScorers::class,
+        CachedTopAssisters::class],
     version = 1,
     exportSchema = false
 )
 @TypeConverters(TeamConverter::class, CareerStepListConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun fixtureDao(): FixtureDao
-    abstract fun transferDao(): TransferDao
 
     abstract fun standingsDao(): StandingsDao
 
@@ -43,9 +47,10 @@ abstract class AppDatabase : RoomDatabase() {
         private var instance: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase {
-            return instance ?: synchronized(this) {
-                instance ?: buildDatabase(context).also { instance = it }
-            }
+            return instance
+                ?: synchronized(this) {
+                    instance ?: buildDatabase(context).also { instance = it }
+                }
         }
 
         private fun buildDatabase(context: Context): AppDatabase {
@@ -59,4 +64,3 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
-
