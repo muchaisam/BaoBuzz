@@ -21,7 +21,10 @@ class StandingsRepository(private val api: FootballApi, private val database: Ap
             val cachedData = database.standingsDao().getStandings(leagueId, season)
 
             if (cachedData != null && (System.currentTimeMillis() - cachedData.lastUpdated < cacheValidityPeriod)) {
-                return@withContext gson.fromJson(cachedData.standingsJson, LeagueStandings::class.java)
+                return@withContext gson.fromJson(
+                    cachedData.standingsJson,
+                    LeagueStandings::class.java
+                )
             }
 
             try {
@@ -56,7 +59,10 @@ class StandingsRepository(private val api: FootballApi, private val database: Ap
             val cachedData = database.topScorersDao().getTopScorers(leagueId, season)
 
             if (cachedData != null && (System.currentTimeMillis() - cachedData.lastUpdated < cacheValidityPeriod)) {
-                return@withContext gson.fromJson(cachedData.topScorersJson, Array<PlayerStatResponse>::class.java).toList()
+                return@withContext gson.fromJson(
+                    cachedData.topScorersJson,
+                    Array<PlayerStatResponse>::class.java
+                ).toList()
             }
 
             try {
@@ -78,7 +84,8 @@ class StandingsRepository(private val api: FootballApi, private val database: Ap
             } catch (e: Exception) {
                 e.printStackTrace()
                 if (cachedData != null) {
-                    gson.fromJson(cachedData.topScorersJson, Array<PlayerStatResponse>::class.java).toList()
+                    gson.fromJson(cachedData.topScorersJson, Array<PlayerStatResponse>::class.java)
+                        .toList()
                 } else {
                     emptyList()
                 }
@@ -91,7 +98,10 @@ class StandingsRepository(private val api: FootballApi, private val database: Ap
             val cachedData = database.topAssistersDao().getTopAssisters(leagueId, season)
 
             if (cachedData != null && (System.currentTimeMillis() - cachedData.lastUpdated < cacheValidityPeriod)) {
-                return@withContext gson.fromJson(cachedData.topAssistersJson, Array<PlayerStatResponse>::class.java).toList()
+                return@withContext gson.fromJson(
+                    cachedData.topAssistersJson,
+                    Array<PlayerStatResponse>::class.java
+                ).toList()
             }
 
             try {
@@ -113,7 +123,10 @@ class StandingsRepository(private val api: FootballApi, private val database: Ap
             } catch (e: Exception) {
                 e.printStackTrace()
                 if (cachedData != null) {
-                    gson.fromJson(cachedData.topAssistersJson, Array<PlayerStatResponse>::class.java).toList()
+                    gson.fromJson(
+                        cachedData.topAssistersJson,
+                        Array<PlayerStatResponse>::class.java
+                    ).toList()
                 } else {
                     emptyList()
                 }
