@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.msdc.baobuzz.core.models.LeagueStanding
 import com.msdc.baobuzz.core.models.LiveMatch
-import com.msdc.baobuzz.core.models.Team
-import com.msdc.baobuzz.core.models.Transfer
+import com.msdc.baobuzz.core.models.TransferDetails
+import com.msdc.baobuzz.models.Team
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -206,7 +206,7 @@ private fun EnhancedTeamInfo(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransferCard(
-    transfer: Transfer,
+    transfer: TransferDetails,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -258,50 +258,48 @@ fun TransferCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    transfer.fromTeam?.let { fromTeam ->
-                        // From team with small logo
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AsyncImage(
-                                model = fromTeam.logo,
-                                contentDescription = "${fromTeam.name} logo",
-                                modifier = Modifier.size(16.dp),
-                                contentScale = ContentScale.Fit
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = fromTeam.name,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Transfer to",
-                            modifier = Modifier.size(12.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-
-                    // To team with small logo
+                    // From team (teamOut) with small logo
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         AsyncImage(
-                            model = transfer.toTeam.logo,
-                            contentDescription = "${transfer.toTeam.name} logo",
+                            model = transfer.teamOut.logo,
+                            contentDescription = "${transfer.teamOut.name} logo",
                             modifier = Modifier.size(16.dp),
                             contentScale = ContentScale.Fit
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = transfer.toTeam.name,
+                            text = transfer.teamOut.name,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.Filled.ArrowForward,
+                        contentDescription = "Transfer to",
+                        modifier = Modifier.size(12.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // To team (teamIn) with small logo
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = transfer.teamIn.logo,
+                            contentDescription = "${transfer.teamIn.name} logo",
+                            modifier = Modifier.size(16.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = transfer.teamIn.name,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium
                             ),
@@ -311,16 +309,6 @@ fun TransferCard(
                         )
                     }
                 }
-
-                // Transfer fee if available
-                transfer.fee?.let { fee ->
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = fee,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -328,19 +316,19 @@ fun TransferCard(
             // Transfer type badge
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = when (transfer.transferType.lowercase()) {
+                color = when (transfer.type.lowercase()) {
                     "free" -> MaterialTheme.colorScheme.secondaryContainer
                     "loan" -> MaterialTheme.colorScheme.tertiaryContainer
                     else -> MaterialTheme.colorScheme.primaryContainer
                 }
             ) {
                 Text(
-                    text = transfer.transferType,
+                    text = transfer.type,
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Medium
                     ),
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    color = when (transfer.transferType.lowercase()) {
+                    color = when (transfer.type.lowercase()) {
                         "free" -> MaterialTheme.colorScheme.onSecondaryContainer
                         "loan" -> MaterialTheme.colorScheme.onTertiaryContainer
                         else -> MaterialTheme.colorScheme.onPrimaryContainer
@@ -440,7 +428,7 @@ fun LeagueStandingsCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             // Divider
-            HorizontalDivider(
+            Divider(
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant
             )
@@ -448,7 +436,7 @@ fun LeagueStandingsCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Top teams with enhanced styling
-            standings.topTeams.take(5).forEachIndexed { index, team ->
+            standings.teams.take(5).forEachIndexed { index, team ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -511,8 +499,8 @@ fun LeagueStandingsCard(
                     )
                 }
 
-                if (index < standings.topTeams.take(5).size - 1) {
-                    HorizontalDivider(
+                if (index < standings.teams.take(5).size - 1) {
+                    Divider(
                         thickness = 0.5.dp,
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
@@ -520,7 +508,7 @@ fun LeagueStandingsCard(
             }
 
             // View more indicator if there are more teams
-            if (standings.topTeams.size > 5) {
+            if (standings.teams.size > 5) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "View full table",
