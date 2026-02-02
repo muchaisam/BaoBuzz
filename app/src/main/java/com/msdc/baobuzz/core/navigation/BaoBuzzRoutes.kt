@@ -15,4 +15,18 @@ object BaoBuzzRoutes {
     const val STATS = "stats"
     const val SETTINGS = "settings"
     const val TRANSFERS = "transfers/{teamId}"
+
+    // NEW FEATURE DESTINATIONS 🎯🔥
+    const val QUIZ = "quiz"
+    const val QUIZ_RESULT = "quiz_result/{quizId}"
+    const val FACTS = "facts"
+    const val COMPARISON = "comparison"
+
+    // Premium feature destinations
+    const val TEAM_DETAIL = "team_detail/{teamId}"
+    const val PLAYER_DETAIL = "player_detail/{playerId}"
+    const val MATCH_DETAIL = "match_detail/{matchId}"
+    const val ANALYTICS = "analytics"
+    const val SEARCH = "search"
+    const val FAVORITES = "favorites"
 }
