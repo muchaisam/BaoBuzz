@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -55,7 +55,7 @@ fun MainAppScreen(navController: NavHostController = rememberNavController()) {
             ),
             BottomNavItem(
                 route = BaoBuzzRoutes.LEAGUES,
-                icon = Icons.AutoMirrored.Filled.List,
+                icon = Icons.Filled.List,
                 label = "Leagues"
             ),
             BottomNavItem(
@@ -107,7 +107,11 @@ fun MainAppScreen(navController: NavHostController = rememberNavController()) {
                             popUpTo(BaoBuzzRoutes.HOME) { inclusive = true }
                         }
                     },
-                    onNavigateToSettings = { navController.navigate(BaoBuzzRoutes.SETTINGS) }
+                    onNavigateToSettings = { navController.navigate(BaoBuzzRoutes.SETTINGS) },
+                    // NEW FEATURE NAVIGATION 🎯📖🔄
+                    onNavigateToQuiz = { navController.navigate(BaoBuzzRoutes.QUIZ) },
+                    onNavigateToFacts = { navController.navigate(BaoBuzzRoutes.FACTS) },
+                    onNavigateToComparison = { navController.navigate(BaoBuzzRoutes.COMPARISON) }
                 )
             }
 
