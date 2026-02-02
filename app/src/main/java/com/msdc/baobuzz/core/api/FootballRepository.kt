@@ -5,8 +5,11 @@ import com.msdc.baobuzz.core.models.*
 import com.msdc.baobuzz.interfaces.FootballApi
 import com.msdc.baobuzz.models.ApiTransfer
 import com.msdc.baobuzz.models.PlayerStatResponse
+import com.msdc.baobuzz.models.Team
 import com.msdc.baobuzz.models.TransferDetail
+import com.msdc.baobuzz.models.footballdata.*
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 import com.msdc.baobuzz.models.Fixture as ApiFixture
 
@@ -31,10 +34,23 @@ interface FootballRepository {
 class FootballRepositoryImpl
 @Inject
 constructor(
-    private val footballApi: FootballApi,
+    private val footballApi: FootballApi, // Keep for transfers (optional)
+    @Named("football-data") private val footballDataApi: com.msdc.baobuzz.core.api.interfaces.FootballDataApi,
     private val apiRequestTracker: ApiRequestTracker,
     private val cache: FootballDataCache
 ) : FootballRepository {
+
+    // Map league IDs to football-data.org competition codes
+    private fun getCompetitionCode(leagueId: Int): String? {
+        return when (leagueId) {
+            39 -> "PL"    // Premier League
+            78 -> "BL1"   // Bundesliga
+            140 -> "PD"   // La Liga
+            135 -> "SA"   // Serie A
+            61 -> "FL1"   // Ligue 1
+            else -> null
+        }
+    }
 
     override suspend fun getLiveMatches(leagueIds: List<Int>): List<LiveMatch> {
         return try {
@@ -70,12 +86,20 @@ constructor(
                             Team(
                                 id = fixtureResponse.teams.home.id,
                                 name = fixtureResponse.teams.home.name,
+                                code = null,
+                                country = "",
+                                founded = null,
+                                national = false,
                                 logo = fixtureResponse.teams.home.logo
                             ),
                             awayTeam =
                             Team(
                                 id = fixtureResponse.teams.away.id,
                                 name = fixtureResponse.teams.away.name,
+                                code = null,
+                                country = "",
+                                founded = null,
+                                national = false,
                                 logo = fixtureResponse.teams.away.logo
                             ),
                             homeScore = fixtureResponse.goals.home,
@@ -150,37 +174,24 @@ constructor(
                 return null
             }
 
-            val response = footballApi.getStandings(league = leagueId, season = getCurrentSeason())
+            // Get competition code for football-data.org
+            val competitionCode = getCompetitionCode(leagueId) ?: return null
 
-            val standings = response.response?.firstOrNull()?.league?.standings?.firstOrNull()
-            val leagueInfo = response.response?.firstOrNull()?.league
+            // Use new football-data.org API
+            val response = footballDataApi.getStandings(competitionCode)
 
-            if (standings != null && leagueInfo != null) {
+            val standingsTable = response.standings.firstOrNull()?.table
+            val competition = response.competition
+
+            if (standingsTable != null) {
                 apiRequestTracker.recordRequest()
 
-                val leagueStanding =
-                    LeagueStanding(
-                        leagueId = leagueId,
-                        leagueName = leagueInfo.name,
-                        leagueLogo = leagueInfo.logo,
-                        topTeams =
-                        standings.map { standing ->
-                            TeamStanding(
-                                position = standing.rank,
-                                team =
-                                Team(
-                                    id = standing.team.id,
-                                    name = standing.team.name,
-                                    logo = standing.team.logo
-                                ),
-                                points = standing.points,
-                                played = standing.all.played,
-                                won = standing.all.win,
-                                drawn = standing.all.draw,
-                                lost = standing.all.lose
-                            )
-                        }
-                    )
+                val leagueStanding = LeagueStanding(
+                    leagueId = leagueId,
+                    leagueName = competition.name,
+                    leagueLogo = competition.emblem ?: "",
+                    teams = standingsTable.map { it.toDomainTeamStanding() }
+                )
 
                 // Cache the result
                 cache.cacheStandings(leagueId, leagueStanding)
@@ -210,38 +221,17 @@ constructor(
                 return emptyList()
             }
 
-            val response =
-                footballApi.getFixtures(
-                    league = leagueId,
-                    season = getCurrentSeason(),
-                    from = from,
-                    to = to
-                )
+            // Get competition code for football-data.org
+            val competitionCode = getCompetitionCode(leagueId) ?: return emptyList()
 
-            val fixtures =
-                response.response?.map { fixtureResponse: ApiFixture ->
-                    com.msdc.baobuzz.core.models.Fixture(
-                        id = fixtureResponse.fixture.id.toString(),
-                        homeTeam =
-                        Team(
-                            id = fixtureResponse.teams.home.id,
-                            name = fixtureResponse.teams.home.name,
-                            logo = fixtureResponse.teams.home.logo
-                        ),
-                        awayTeam =
-                        Team(
-                            id = fixtureResponse.teams.away.id,
-                            name = fixtureResponse.teams.away.name,
-                            logo = fixtureResponse.teams.away.logo
-                        ),
-                        date = fixtureResponse.fixture.date,
-                        venue = fixtureResponse.fixture.venue?.name ?: "TBD",
-                        status = fixtureResponse.fixture.status.long,
-                        homeScore = fixtureResponse.goals.home,
-                        awayScore = fixtureResponse.goals.away
-                    )
-                }
-                    ?: emptyList()
+            // Use new football-data.org API
+            val response = footballDataApi.getMatches(
+                competitionCode = competitionCode,
+                dateFrom = from,
+                dateTo = to
+            )
+
+            val fixtures = response.matches.map { it.toDomainFixture() }
 
             apiRequestTracker.recordRequest()
 
@@ -264,44 +254,16 @@ constructor(
                 return emptyList()
             }
 
-            val response = footballApi.getTopScorers(league = leagueId, season = getCurrentSeason())
+            // Get competition code for football-data.org
+            val competitionCode = getCompetitionCode(leagueId) ?: return emptyList()
 
-            val players =
-                response.response?.map { playerResponse: PlayerStatResponse ->
-                    PlayerStat(
-                        player =
-                        Player(
-                            id = playerResponse.player.id,
-                            name = playerResponse.player.name
-                        ),
-                        photo = playerResponse.player.photo,
-                        team =
-                        Team(
-                            id =
-                            playerResponse.statistics.firstOrNull()
-                                ?.team
-                                ?.id
-                                ?: 0,
-                            name =
-                            playerResponse.statistics.firstOrNull()
-                                ?.team
-                                ?.name
-                                ?: "",
-                            logo =
-                            playerResponse.statistics.firstOrNull()
-                                ?.team
-                                ?.logo
-                                ?: ""
-                        ),
-                        goals = playerResponse.statistics.firstOrNull()?.goals?.total ?: 0,
-                        assists = playerResponse.statistics.firstOrNull()?.goals?.assists
-                            ?: 0,
-                        appearances =
-                        playerResponse.statistics.firstOrNull()?.games?.appearences
-                            ?: 0
-                    )
-                }
-                    ?: emptyList()
+            // Use new football-data.org API
+            val response = footballDataApi.getTopScorers(
+                competitionCode = competitionCode,
+                limit = 20
+            )
+
+            val players = response.scorers.map { it.toDomainPlayerStat() }
 
             apiRequestTracker.recordRequest()
 
@@ -342,39 +304,29 @@ constructor(
             val futureDate = java.time.LocalDate.now().plusDays(30).toString()
 
             leagueIds.forEach { leagueId ->
-                val response =
-                    footballApi.getFixtures(
-                        league = leagueId,
-                        season = getCurrentSeason(),
-                        from = today,
-                        to = futureDate
-                    )
+                val competitionCode = getCompetitionCode(leagueId) ?: return@forEach
 
-                response.response.take(limit / leagueIds.size + 1).forEach { fixtureResponse ->
-                    if (fixtureResponse.fixture.status.short == "NS") { // Not Started
-                        fixtures.add(
-                            UpcomingFixture(
-                                id = fixtureResponse.fixture.id.toString(),
-                                homeTeam =
-                                Team(
-                                    id = fixtureResponse.teams.home.id,
-                                    name = fixtureResponse.teams.home.name,
-                                    logo = fixtureResponse.teams.home.logo
-                                ),
-                                awayTeam =
-                                Team(
-                                    id = fixtureResponse.teams.away.id,
-                                    name = fixtureResponse.teams.away.name,
-                                    logo = fixtureResponse.teams.away.logo
-                                ),
-                                dateTime = fixtureResponse.fixture.date,
-                                venue = fixtureResponse.fixture.venue.name,
-                                round = fixtureResponse.league.round,
-                                leagueId = leagueId,
-                                leagueName = fixtureResponse.league.name
-                            )
+                // Use new football-data.org API
+                val response = footballDataApi.getMatches(
+                    competitionCode = competitionCode,
+                    status = "SCHEDULED",
+                    dateFrom = today,
+                    dateTo = futureDate
+                )
+
+                response.matches.take(limit / leagueIds.size + 1).forEach { match ->
+                    fixtures.add(
+                        UpcomingFixture(
+                            id = match.id.toString(),
+                            homeTeam = match.homeTeam.toDomainTeam(),
+                            awayTeam = match.awayTeam.toDomainTeam(),
+                            dateTime = match.utcDate,
+                            venue = "TBD",
+                            round = "Matchday ${match.matchday}",
+                            leagueId = leagueId,
+                            leagueName = match.competition?.name ?: "Unknown"
                         )
-                    }
+                    )
                 }
 
                 apiRequestTracker.recordRequest()
@@ -408,40 +360,30 @@ constructor(
             val today = java.time.LocalDate.now().toString()
 
             leagueIds.forEach { leagueId ->
-                val response =
-                    footballApi.getFixtures(
-                        league = leagueId,
-                        season = getCurrentSeason(),
-                        from = pastDate,
-                        to = today
-                    )
+                val competitionCode = getCompetitionCode(leagueId) ?: return@forEach
 
-                response.response.take(limit / leagueIds.size + 1).forEach { fixtureResponse ->
-                    if (fixtureResponse.fixture.status.short == "FT") { // Full Time
-                        results.add(
-                            RecentResult(
-                                id = fixtureResponse.fixture.id.toString(),
-                                homeTeam =
-                                Team(
-                                    id = fixtureResponse.teams.home.id,
-                                    name = fixtureResponse.teams.home.name,
-                                    logo = fixtureResponse.teams.home.logo
-                                ),
-                                awayTeam =
-                                Team(
-                                    id = fixtureResponse.teams.away.id,
-                                    name = fixtureResponse.teams.away.name,
-                                    logo = fixtureResponse.teams.away.logo
-                                ),
-                                homeScore = fixtureResponse.goals.home ?: 0,
-                                awayScore = fixtureResponse.goals.away ?: 0,
-                                date = fixtureResponse.fixture.date,
-                                round = fixtureResponse.league.round,
-                                leagueId = leagueId,
-                                leagueName = fixtureResponse.league.name
-                            )
+                // Use new football-data.org API
+                val response = footballDataApi.getMatches(
+                    competitionCode = competitionCode,
+                    status = "FINISHED",
+                    dateFrom = pastDate,
+                    dateTo = today
+                )
+
+                response.matches.take(limit / leagueIds.size + 1).forEach { match ->
+                    results.add(
+                        RecentResult(
+                            id = match.id.toString(),
+                            homeTeam = match.homeTeam.toDomainTeam(),
+                            awayTeam = match.awayTeam.toDomainTeam(),
+                            homeScore = match.score.fullTime?.home ?: 0,
+                            awayScore = match.score.fullTime?.away ?: 0,
+                            date = match.utcDate,
+                            round = "Matchday ${match.matchday}",
+                            leagueId = leagueId,
+                            leagueName = match.competition?.name ?: "Unknown"
                         )
-                    }
+                    )
                 }
 
                 apiRequestTracker.recordRequest()
@@ -463,16 +405,17 @@ constructor(
                 return null
             }
 
-            val targetSeason = season ?: getCurrentSeason()
-            val standingsResponse =
-                footballApi.getStandings(league = leagueId, season = targetSeason)
+            // Get competition code for football-data.org
+            val competitionCode = getCompetitionCode(leagueId) ?: return null
 
-            val leagueInfo = standingsResponse.response.firstOrNull()?.league
-            val standings =
-                standingsResponse.response.firstOrNull()?.league?.standings?.firstOrNull()
-            val champion = standings?.firstOrNull()
+            // Use new football-data.org API
+            val standingsResponse = footballDataApi.getStandings(competitionCode)
 
-            if (leagueInfo != null) {
+            val table = standingsResponse.standings.firstOrNull()?.table
+            val champion = table?.firstOrNull()
+            val competition = standingsResponse.competition
+
+            if (table != null) {
                 // Get top scorer for the season
                 val topScorersList = getTopScorers(leagueId)
                 val topScorer = topScorersList.firstOrNull()
@@ -481,14 +424,14 @@ constructor(
 
                 SeasonSummary(
                     leagueId = leagueId,
-                    leagueName = leagueInfo.name,
-                    leagueLogo = leagueInfo.logo,
-                    season = targetSeason,
-                    champion = champion?.let { Team(it.team.id, it.team.name, it.team.logo) },
+                    leagueName = competition.name,
+                    leagueLogo = competition.emblem ?: "",
+                    season = getCurrentSeason(),
+                    champion = champion?.let { it.team.toDomainTeam() },
                     topScorer = topScorer,
-                    totalGoals = standings?.sumOf { it.all.goals.goalsfor } ?: 0,
-                    totalMatches = standings?.sumOf { it.all.played } ?: 0,
-                    isCurrentSeason = targetSeason == getCurrentSeason()
+                    totalGoals = table.sumOf { it.goalsFor },
+                    totalMatches = table.sumOf { it.playedGames },
+                    isCurrentSeason = true
                 )
             } else {
                 null
@@ -521,14 +464,14 @@ constructor(
                             leagueId = leagueId,
                             leagueName = standings.leagueName,
                             leagueLogo = standings.leagueLogo,
-                            currentStanding = standings.topTeams.firstOrNull(),
+                            currentStanding = standings.teams.firstOrNull(),
                             nextFixture = upcomingFixtures.firstOrNull(),
                             lastResult = recentResults.firstOrNull(),
                             topScorer = topScorers.firstOrNull(),
-                            matchesPlayed = standings.topTeams.firstOrNull()?.played ?: 0,
+                            matchesPlayed = standings.teams.firstOrNull()?.played ?: 0,
                             matchesRemaining =
                             38 -
-                                    (standings.topTeams.firstOrNull()?.played
+                                    (standings.teams.firstOrNull()?.played
                                         ?: 0) // Assuming 38 match season
                         )
                     )
