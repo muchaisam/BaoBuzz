@@ -142,9 +142,9 @@ constructor(
                         recentTransfers = recentTransfers,
                         leagueStandings = leagueStandings,
                         selectedLeagues =
-                        selectedLeagueIds.mapNotNull { leagueId ->
-                            LeagueData.getLeagueById(leagueId)
-                        },
+                            selectedLeagueIds.mapNotNull { leagueId ->
+                                LeagueData.getLeagueById(leagueId)
+                            },
                         upcomingFixtures = upcomingFixtures,
                         recentResults = recentResults,
                         leagueInsights = leagueInsights,
