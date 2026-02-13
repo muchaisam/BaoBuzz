@@ -2,7 +2,6 @@ package com.msdc.baobuzz.core.di
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.msdc.baobuzz.BuildConfig
 import com.msdc.baobuzz.core.api.AuthInterceptor
 import com.msdc.baobuzz.core.api.RequestLimitInterceptor
 import com.msdc.baobuzz.core.api.interceptors.FootballDataAuthInterceptor
@@ -35,7 +34,8 @@ object NetworkModule {
 
     // API Base URLs
     private const val API_SPORTS_URL = "https://v3.football.api-sports.io/"
-    private const val OPEN_FOOTBALL_URL = "https://raw.githubusercontent.com/openfootball/football.json/master/"
+    private const val OPEN_FOOTBALL_URL =
+        "https://raw.githubusercontent.com/openfootball/football.json/master/"
     private const val FOOTBALL_DATA_URL = "https://api.football-data.org/v4/"
 
     // ================== Shared Dependencies ==================
