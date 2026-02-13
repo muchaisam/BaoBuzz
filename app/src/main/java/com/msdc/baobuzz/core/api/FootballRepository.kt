@@ -1,13 +1,25 @@
 package com.msdc.baobuzz.core.api
 
 import com.msdc.baobuzz.core.cache.FootballDataCache
-import com.msdc.baobuzz.core.models.*
+import com.msdc.baobuzz.core.models.Fixture
+import com.msdc.baobuzz.core.models.LeagueInsight
+import com.msdc.baobuzz.core.models.LeagueStanding
+import com.msdc.baobuzz.core.models.LiveMatch
+import com.msdc.baobuzz.core.models.PlayerDetails
+import com.msdc.baobuzz.core.models.PlayerStat
+import com.msdc.baobuzz.core.models.RecentResult
+import com.msdc.baobuzz.core.models.SeasonSummary
+import com.msdc.baobuzz.core.models.TeamDetails
+import com.msdc.baobuzz.core.models.TransferDetails
+import com.msdc.baobuzz.core.models.UpcomingFixture
 import com.msdc.baobuzz.interfaces.FootballApi
 import com.msdc.baobuzz.models.ApiTransfer
-import com.msdc.baobuzz.models.PlayerStatResponse
 import com.msdc.baobuzz.models.Team
 import com.msdc.baobuzz.models.TransferDetail
-import com.msdc.baobuzz.models.footballdata.*
+import com.msdc.baobuzz.models.footballdata.toDomainFixture
+import com.msdc.baobuzz.models.footballdata.toDomainPlayerStat
+import com.msdc.baobuzz.models.footballdata.toDomainTeam
+import com.msdc.baobuzz.models.footballdata.toDomainTeamStanding
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -83,25 +95,25 @@ constructor(
                         LiveMatch(
                             id = fixtureResponse.fixture.id.toString(),
                             homeTeam =
-                            Team(
-                                id = fixtureResponse.teams.home.id,
-                                name = fixtureResponse.teams.home.name,
-                                code = null,
-                                country = "",
-                                founded = null,
-                                national = false,
-                                logo = fixtureResponse.teams.home.logo
-                            ),
+                                Team(
+                                    id = fixtureResponse.teams.home.id,
+                                    name = fixtureResponse.teams.home.name,
+                                    code = null,
+                                    country = "",
+                                    founded = null,
+                                    national = false,
+                                    logo = fixtureResponse.teams.home.logo
+                                ),
                             awayTeam =
-                            Team(
-                                id = fixtureResponse.teams.away.id,
-                                name = fixtureResponse.teams.away.name,
-                                code = null,
-                                country = "",
-                                founded = null,
-                                national = false,
-                                logo = fixtureResponse.teams.away.logo
-                            ),
+                                Team(
+                                    id = fixtureResponse.teams.away.id,
+                                    name = fixtureResponse.teams.away.name,
+                                    code = null,
+                                    country = "",
+                                    founded = null,
+                                    national = false,
+                                    logo = fixtureResponse.teams.away.logo
+                                ),
                             homeScore = fixtureResponse.goals.home,
                             awayScore = fixtureResponse.goals.away,
                             status = fixtureResponse.fixture.status.long,
@@ -470,9 +482,9 @@ constructor(
                             topScorer = topScorers.firstOrNull(),
                             matchesPlayed = standings.teams.firstOrNull()?.played ?: 0,
                             matchesRemaining =
-                            38 -
-                                    (standings.teams.firstOrNull()?.played
-                                        ?: 0) // Assuming 38 match season
+                                38 -
+                                        (standings.teams.firstOrNull()?.played
+                                            ?: 0) // Assuming 38 match season
                         )
                     )
                 }
@@ -526,22 +538,22 @@ constructor(
             date = transferDetail.date,
             type = transferDetail.type,
             teamIn =
-            TeamDetails(
-                id = transferDetail.teams.`in`.id,
-                name = transferDetail.teams.`in`.name,
-                logo = transferDetail.teams.`in`.logo
-            ),
+                TeamDetails(
+                    id = transferDetail.teams.`in`.id,
+                    name = transferDetail.teams.`in`.name,
+                    logo = transferDetail.teams.`in`.logo
+                ),
             teamOut =
-            TeamDetails(
-                id = transferDetail.teams.out.id,
-                name = transferDetail.teams.out.name,
-                logo = transferDetail.teams.out.logo
-            ),
+                TeamDetails(
+                    id = transferDetail.teams.out.id,
+                    name = transferDetail.teams.out.name,
+                    logo = transferDetail.teams.out.logo
+                ),
             player =
-            PlayerDetails(
-                id = transferResponse.player.id,
-                name = transferResponse.player.name
-            )
+                PlayerDetails(
+                    id = transferResponse.player.id,
+                    name = transferResponse.player.name
+                )
         )
     }
 
