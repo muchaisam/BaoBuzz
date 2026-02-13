@@ -1,7 +1,15 @@
 package com.msdc.baobuzz.core.api
 
 import com.msdc.baobuzz.core.api.interfaces.OpenFootballApi
-import com.msdc.baobuzz.core.models.*
+import com.msdc.baobuzz.core.models.FactCategory
+import com.msdc.baobuzz.core.models.HistoricalFact
+import com.msdc.baobuzz.core.models.OnThisDayFact
+import com.msdc.baobuzz.core.models.QuestionType
+import com.msdc.baobuzz.core.models.QuizDifficulty
+import com.msdc.baobuzz.core.models.QuizQuestion
+import com.msdc.baobuzz.core.models.SeasonComparison
+import com.msdc.baobuzz.core.models.SeasonDifferences
+import com.msdc.baobuzz.core.models.SeasonStats
 import com.msdc.baobuzz.models.openfootball.toDomainMatches
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -78,7 +86,10 @@ class HistoricalRepository @Inject constructor(
     /**
      * Generate "Who won this match?" questions
      */
-    private suspend fun generateMatchResultQuestions(count: Int, difficulty: QuizDifficulty): List<QuizQuestion> {
+    private suspend fun generateMatchResultQuestions(
+        count: Int,
+        difficulty: QuizDifficulty
+    ): List<QuizQuestion> {
         val questions = mutableListOf<QuizQuestion>()
 
         repeat(count) {
@@ -94,7 +105,10 @@ class HistoricalRepository @Inject constructor(
                     val winnerMatches = matches.filter { it.winner != null }
                     if (winnerMatches.isNotEmpty()) {
                         val match = winnerMatches.random()
-                        val wrongAnswers = generateWrongAnswers(match.winner!!, listOf(match.homeTeam, match.awayTeam))
+                        val wrongAnswers = generateWrongAnswers(
+                            match.winner!!,
+                            listOf(match.homeTeam, match.awayTeam)
+                        )
 
                         questions.add(
                             QuizQuestion(
@@ -121,17 +135,52 @@ class HistoricalRepository @Inject constructor(
     /**
      * Generate "Who was the champion?" questions
      */
-    private suspend fun generateChampionQuestions(count: Int, difficulty: QuizDifficulty): List<QuizQuestion> {
+    private suspend fun generateChampionQuestions(
+        count: Int,
+        difficulty: QuizDifficulty
+    ): List<QuizQuestion> {
         val questions = mutableListOf<QuizQuestion>()
         val champions = mapOf(
-            "2015-16" to mapOf("en.1" to "Leicester City", "es.1" to "Barcelona", "de.1" to "Bayern Munich"),
-            "2016-17" to mapOf("en.1" to "Chelsea", "es.1" to "Real Madrid", "de.1" to "Bayern Munich"),
-            "2017-18" to mapOf("en.1" to "Manchester City", "es.1" to "Barcelona", "de.1" to "Bayern Munich"),
-            "2018-19" to mapOf("en.1" to "Manchester City", "es.1" to "Barcelona", "de.1" to "Bayern Munich"),
-            "2019-20" to mapOf("en.1" to "Liverpool", "es.1" to "Real Madrid", "de.1" to "Bayern Munich"),
-            "2020-21" to mapOf("en.1" to "Manchester City", "es.1" to "Atletico Madrid", "de.1" to "Bayern Munich"),
-            "2021-22" to mapOf("en.1" to "Manchester City", "es.1" to "Real Madrid", "de.1" to "Bayern Munich"),
-            "2022-23" to mapOf("en.1" to "Manchester City", "es.1" to "Barcelona", "de.1" to "Bayern Munich")
+            "2015-16" to mapOf(
+                "en.1" to "Leicester City",
+                "es.1" to "Barcelona",
+                "de.1" to "Bayern Munich"
+            ),
+            "2016-17" to mapOf(
+                "en.1" to "Chelsea",
+                "es.1" to "Real Madrid",
+                "de.1" to "Bayern Munich"
+            ),
+            "2017-18" to mapOf(
+                "en.1" to "Manchester City",
+                "es.1" to "Barcelona",
+                "de.1" to "Bayern Munich"
+            ),
+            "2018-19" to mapOf(
+                "en.1" to "Manchester City",
+                "es.1" to "Barcelona",
+                "de.1" to "Bayern Munich"
+            ),
+            "2019-20" to mapOf(
+                "en.1" to "Liverpool",
+                "es.1" to "Real Madrid",
+                "de.1" to "Bayern Munich"
+            ),
+            "2020-21" to mapOf(
+                "en.1" to "Manchester City",
+                "es.1" to "Atletico Madrid",
+                "de.1" to "Bayern Munich"
+            ),
+            "2021-22" to mapOf(
+                "en.1" to "Manchester City",
+                "es.1" to "Real Madrid",
+                "de.1" to "Bayern Munich"
+            ),
+            "2022-23" to mapOf(
+                "en.1" to "Manchester City",
+                "es.1" to "Barcelona",
+                "de.1" to "Bayern Munich"
+            )
         )
 
         repeat(count) {
@@ -164,7 +213,10 @@ class HistoricalRepository @Inject constructor(
     /**
      * Generate "Who was the top scorer?" questions
      */
-    private suspend fun generateTopScorerQuestions(count: Int, difficulty: QuizDifficulty): List<QuizQuestion> {
+    private suspend fun generateTopScorerQuestions(
+        count: Int,
+        difficulty: QuizDifficulty
+    ): List<QuizQuestion> {
         val questions = mutableListOf<QuizQuestion>()
 
         // Historical top scorers data (this would come from API in production)
@@ -217,7 +269,10 @@ class HistoricalRepository @Inject constructor(
     /**
      * Generate team statistics questions
      */
-    private suspend fun generateTeamStatsQuestions(count: Int, difficulty: QuizDifficulty): List<QuizQuestion> {
+    private suspend fun generateTeamStatsQuestions(
+        count: Int,
+        difficulty: QuizDifficulty
+    ): List<QuizQuestion> {
         val questions = mutableListOf<QuizQuestion>()
 
         repeat(count) {
@@ -232,8 +287,10 @@ class HistoricalRepository @Inject constructor(
                     // Calculate team with most goals
                     val teamGoals = mutableMapOf<String, Int>()
                     matches.forEach { match ->
-                        teamGoals[match.homeTeam] = (teamGoals[match.homeTeam] ?: 0) + match.homeScore
-                        teamGoals[match.awayTeam] = (teamGoals[match.awayTeam] ?: 0) + match.awayScore
+                        teamGoals[match.homeTeam] =
+                            (teamGoals[match.homeTeam] ?: 0) + match.homeScore
+                        teamGoals[match.awayTeam] =
+                            (teamGoals[match.awayTeam] ?: 0) + match.awayScore
                     }
 
                     val topTeam = teamGoals.maxByOrNull { it.value }
@@ -268,16 +325,31 @@ class HistoricalRepository @Inject constructor(
     /**
      * Generate league standings questions
      */
-    private suspend fun generateLeagueStandingsQuestions(count: Int, difficulty: QuizDifficulty): List<QuizQuestion> {
+    private suspend fun generateLeagueStandingsQuestions(
+        count: Int,
+        difficulty: QuizDifficulty
+    ): List<QuizQuestion> {
         val questions = mutableListOf<QuizQuestion>()
 
         // Sample standings data
         val standings = mapOf(
             "2015-16" to mapOf(
-                "en.1" to listOf("Leicester City", "Arsenal", "Tottenham", "Manchester City", "Manchester United")
+                "en.1" to listOf(
+                    "Leicester City",
+                    "Arsenal",
+                    "Tottenham",
+                    "Manchester City",
+                    "Manchester United"
+                )
             ),
             "2017-18" to mapOf(
-                "en.1" to listOf("Manchester City", "Manchester United", "Tottenham", "Liverpool", "Chelsea")
+                "en.1" to listOf(
+                    "Manchester City",
+                    "Manchester United",
+                    "Tottenham",
+                    "Liverpool",
+                    "Chelsea"
+                )
             )
         )
 
@@ -312,7 +384,10 @@ class HistoricalRepository @Inject constructor(
     /**
      * Generate score guessing questions
      */
-    private suspend fun generateScoreGuessQuestions(count: Int, difficulty: QuizDifficulty): List<QuizQuestion> {
+    private suspend fun generateScoreGuessQuestions(
+        count: Int,
+        difficulty: QuizDifficulty
+    ): List<QuizQuestion> {
         val questions = mutableListOf<QuizQuestion>()
 
         repeat(count) {
