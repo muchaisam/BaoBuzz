@@ -16,12 +16,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
@@ -40,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -273,7 +271,7 @@ private fun SuccessState(
         EmptyState(
             title = "No Leagues Selected",
             description =
-            "Please select some leagues in your preferences to see standings and data."
+                "Please select some leagues in your preferences to see standings and data."
         )
     } else {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -737,36 +735,36 @@ private fun LeagueStandingsCard(
                 standing.teams.take(10).forEach { teamStanding ->
                     Row(
                         modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clickable {
-                                onTeamClick(teamStanding.team.id)
-                            }, // Handle click
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable {
+                                    onTeamClick(teamStanding.team.id)
+                                }, // Handle click
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         // Position
                         Card(
                             colors =
-                            CardDefaults.cardColors(
-                                containerColor =
-                                when (teamStanding.position) {
-                                    1 ->
-                                        MaterialTheme.colorScheme
-                                            .primaryContainer
+                                CardDefaults.cardColors(
+                                    containerColor =
+                                        when (teamStanding.position) {
+                                            1 ->
+                                                MaterialTheme.colorScheme
+                                                    .primaryContainer
 
-                                    in 2..4 ->
-                                        MaterialTheme.colorScheme
-                                            .secondaryContainer
+                                            in 2..4 ->
+                                                MaterialTheme.colorScheme
+                                                    .secondaryContainer
 
-                                    in 18..20 ->
-                                        MaterialTheme.colorScheme
-                                            .errorContainer
+                                            in 18..20 ->
+                                                MaterialTheme.colorScheme
+                                                    .errorContainer
 
-                                    else -> MaterialTheme.colorScheme.surface
-                                }
-                            ),
+                                            else -> MaterialTheme.colorScheme.surface
+                                        }
+                                ),
                             modifier = Modifier.width(32.dp)
                         ) {
                             Text(
