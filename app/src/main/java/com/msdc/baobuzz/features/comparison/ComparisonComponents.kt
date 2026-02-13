@@ -5,9 +5,25 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -149,7 +165,8 @@ fun TopScorersComparisonCard(
                     Spacer(modifier = Modifier.height(12.dp))
                     val winner = if (season1.topScorerGoals > season2.topScorerGoals)
                         season1.topScorer else season2.topScorer
-                    val difference = kotlin.math.abs(season1.topScorerGoals - season2.topScorerGoals)
+                    val difference =
+                        kotlin.math.abs(season1.topScorerGoals - season2.topScorerGoals)
                     Text(
                         text = "👑 $winner scored $difference more goals",
                         style = MaterialTheme.typography.labelMedium,
