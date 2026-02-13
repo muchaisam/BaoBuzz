@@ -62,7 +62,7 @@ constructor(
                     StatsUiState.Success(
                         topScorers = allTopScorers.sortedByDescending { it.goals }.take(20),
                         topAssisters =
-                        allTopAssisters.sortedByDescending { it.assists }.take(20)
+                            allTopAssisters.sortedByDescending { it.assists }.take(20)
                     )
             } catch (e: Exception) {
                 _uiState.value = StatsUiState.Error(message = e.message ?: "Unknown error occurred")
