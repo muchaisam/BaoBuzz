@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -80,9 +80,9 @@ fun MainAppScreen(navController: NavHostController = rememberNavController()) {
                         },
                         label = { Text(item.label) },
                         selected =
-                        currentDestination?.hierarchy?.any {
-                            it.route == item.route
-                        } == true,
+                            currentDestination?.hierarchy?.any {
+                                it.route == item.route
+                            } == true,
                         onClick = {
                             navController.navigate(item.route) {
                                 popUpTo(BaoBuzzRoutes.HOME) { saveState = true }
@@ -160,9 +160,9 @@ private fun PlaceholderScreen(title: String, description: String) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
