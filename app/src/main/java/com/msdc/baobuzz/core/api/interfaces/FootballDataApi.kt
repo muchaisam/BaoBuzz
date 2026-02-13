@@ -1,6 +1,11 @@
 package com.msdc.baobuzz.core.api.interfaces
 
-import com.msdc.baobuzz.models.footballdata.*
+import com.msdc.baobuzz.models.footballdata.FDCompetitionsResponse
+import com.msdc.baobuzz.models.footballdata.FDMatchResponse
+import com.msdc.baobuzz.models.footballdata.FDMatchesResponse
+import com.msdc.baobuzz.models.footballdata.FDScorersResponse
+import com.msdc.baobuzz.models.footballdata.FDStandingsResponse
+import com.msdc.baobuzz.models.footballdata.FDTeamResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
