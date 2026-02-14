@@ -69,7 +69,10 @@ data class OFClub(
 )
 
 // Extension functions to convert to domain models
-fun OFMatch.toDomainMatch(seasonYear: String, leagueName: String): com.msdc.baobuzz.core.models.HistoricalMatch {
+fun OFMatch.toDomainMatch(
+    seasonYear: String,
+    leagueName: String
+): com.msdc.baobuzz.core.models.HistoricalMatch {
     val homeScore = score?.ft?.getOrNull(0) ?: 0
     val awayScore = score?.ft?.getOrNull(1) ?: 0
 
@@ -91,7 +94,10 @@ fun OFMatch.toDomainMatch(seasonYear: String, leagueName: String): com.msdc.baob
     )
 }
 
-fun List<OFMatch>.toDomainMatches(seasonYear: String, leagueName: String): List<com.msdc.baobuzz.core.models.HistoricalMatch> {
+fun List<OFMatch>.toDomainMatches(
+    seasonYear: String,
+    leagueName: String
+): List<com.msdc.baobuzz.core.models.HistoricalMatch> {
     return this.mapNotNull { match ->
         try {
             match.toDomainMatch(seasonYear, leagueName)
