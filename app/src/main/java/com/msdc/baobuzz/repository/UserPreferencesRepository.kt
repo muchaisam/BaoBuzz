@@ -42,28 +42,28 @@ class UserPreferencesRepository @Inject constructor(private val dataStore: DataS
         dataStore.data.map { prefs ->
             UserPreferences(
                 selectedLeagueIds =
-                prefs[SELECTED_LEAGUES]?.split(",")?.mapNotNull {
-                    if (it.isBlank()) null else it.toIntOrNull()
-                }
-                    ?: emptyList(),
-                selectedTeamIds =
-                prefs[SELECTED_TEAMS]?.split(",")?.mapNotNull {
-                    if (it.isBlank()) null else it.toIntOrNull()
-                }
-                    ?: emptyList(),
-                teamNotifications =
-                prefs[TEAM_NOTIFICATIONS]
-                    ?.split(",")
-                    ?.associate {
-                        val parts = it.split(":")
-                        if (parts.size == 2) {
-                            parts[0].toInt() to parts[1].toBoolean()
-                        } else {
-                            0 to false
-                        }
+                    prefs[SELECTED_LEAGUES]?.split(",")?.mapNotNull {
+                        if (it.isBlank()) null else it.toIntOrNull()
                     }
-                    ?.filterKeys { it != 0 }
-                    ?: emptyMap(),
+                        ?: emptyList(),
+                selectedTeamIds =
+                    prefs[SELECTED_TEAMS]?.split(",")?.mapNotNull {
+                        if (it.isBlank()) null else it.toIntOrNull()
+                    }
+                        ?: emptyList(),
+                teamNotifications =
+                    prefs[TEAM_NOTIFICATIONS]
+                        ?.split(",")
+                        ?.associate {
+                            val parts = it.split(":")
+                            if (parts.size == 2) {
+                                parts[0].toInt() to parts[1].toBoolean()
+                            } else {
+                                0 to false
+                            }
+                        }
+                        ?.filterKeys { it != 0 }
+                        ?: emptyMap(),
                 isOnboardingCompleted = prefs[ONBOARDING_COMPLETED] ?: false,
                 preferredLanguage = prefs[PREFERRED_LANGUAGE] ?: "en",
                 notificationsEnabled = prefs[NOTIFICATIONS_ENABLED] ?: true
