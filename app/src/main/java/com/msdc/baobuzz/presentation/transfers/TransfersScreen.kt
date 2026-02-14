@@ -46,9 +46,9 @@ import com.msdc.baobuzz.core.models.TransferDetails
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransfersScreen(
-        teamId: Int,
-        viewModel: TransfersViewModel = hiltViewModel(),
-        navController: NavHostController? = null
+    teamId: Int,
+    viewModel: TransfersViewModel = hiltViewModel(),
+    navController: NavHostController? = null
 ) {
     val transfers by viewModel.transfers.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -56,160 +56,166 @@ fun TransfersScreen(
     LaunchedEffect(teamId) { viewModel.getTransfers(teamId) }
 
     Scaffold(
-            topBar = {
-                TopAppBar(
-                        title = { Text("Team Transfers") },
-                        navigationIcon = {
-                            if (navController != null) {
-                                IconButton(onClick = { navController.popBackStack() }) {
-                                    Icon(
-                                            imageVector = Icons.Default.ArrowBack,
-                                            contentDescription = "Back"
-                                    )
-                                }
-                            }
+        topBar = {
+            TopAppBar(
+                title = { Text("Team Transfers") },
+                navigationIcon = {
+                    if (navController != null) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back"
+                            )
                         }
-                )
-            }
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
         Column(
-                modifier =
-                        Modifier.fillMaxSize()
-                                .background(
-                                        Brush.verticalGradient(
-                                                colors =
-                                                        listOf(
-                                                                MaterialTheme.colorScheme
-                                                                        .background,
-                                                                MaterialTheme.colorScheme
-                                                                        .surfaceVariant.copy(
-                                                                        alpha = 0.3f
-                                                                )
-                                                        )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    MaterialTheme.colorScheme
+                                        .background,
+                                    MaterialTheme.colorScheme
+                                        .surfaceVariant.copy(
+                                            alpha = 0.3f
                                         )
                                 )
-                                .padding(paddingValues)
-                                .padding(16.dp)
+                        )
+                    )
+                    .padding(paddingValues)
+                    .padding(16.dp)
         ) {
             if (isLoading) {
                 Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors =
-                                CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surface
-                                ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                        shape = RoundedCornerShape(16.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Box(
-                            modifier = Modifier.fillMaxWidth().padding(48.dp),
-                            contentAlignment = Alignment.Center
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(48.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             CircularProgressIndicator(
-                                    modifier = Modifier.size(48.dp),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    strokeWidth = 4.dp
+                                modifier = Modifier.size(48.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 4.dp
                             )
                             Text(
-                                    text = "Loading Transfers...",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                text = "Loading Transfers...",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                    text = "Fetching latest transfer data",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                text = "Fetching latest transfer data",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
             } else if (transfers.isEmpty()) {
                 Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors =
-                                CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surface
-                                ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                        shape = RoundedCornerShape(16.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Box(
-                            modifier =
-                                    Modifier.fillMaxWidth()
-                                            .background(
-                                                    Brush.verticalGradient(
-                                                            colors =
-                                                                    listOf(
-                                                                            MaterialTheme
-                                                                                    .colorScheme
-                                                                                    .primary.copy(
-                                                                                    alpha = 0.05f
-                                                                            ),
-                                                                            MaterialTheme
-                                                                                    .colorScheme
-                                                                                    .primaryContainer
-                                                                                    .copy(
-                                                                                            alpha =
-                                                                                                    0.1f
-                                                                                    )
-                                                                    )
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors =
+                                            listOf(
+                                                MaterialTheme
+                                                    .colorScheme
+                                                    .primary.copy(
+                                                        alpha = 0.05f
+                                                    ),
+                                                MaterialTheme
+                                                    .colorScheme
+                                                    .primaryContainer
+                                                    .copy(
+                                                        alpha =
+                                                            0.1f
                                                     )
                                             )
+                                    )
+                                )
                     ) {
                         Column(
-                                modifier = Modifier.fillMaxWidth().padding(32.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Card(
-                                    modifier = Modifier.size(80.dp),
-                                    colors =
-                                            CardDefaults.cardColors(
-                                                    containerColor =
-                                                            MaterialTheme.colorScheme.primary.copy(
-                                                                    alpha = 0.1f
-                                                            )
-                                            ),
-                                    shape = RoundedCornerShape(20.dp)
+                                modifier = Modifier.size(80.dp),
+                                colors =
+                                    CardDefaults.cardColors(
+                                        containerColor =
+                                            MaterialTheme.colorScheme.primary.copy(
+                                                alpha = 0.1f
+                                            )
+                                    ),
+                                shape = RoundedCornerShape(20.dp)
                             ) {
                                 Box(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                            imageVector = Icons.Filled.ArrowForward,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(40.dp),
-                                            tint = MaterialTheme.colorScheme.primary
+                                        imageVector = Icons.Filled.ArrowForward,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(40.dp),
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
                             Text(
-                                    text = "No Transfers Found",
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                text = "No Transfers Found",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                    text =
-                                            "This team doesn't have any recorded transfers in our database.",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                text =
+                                    "This team doesn't have any recorded transfers in our database.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
                     }
                 }
             } else {
                 LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(vertical = 8.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     // ✅ ADDED KEY - Performance optimization
                     items(
@@ -227,60 +233,63 @@ fun TransfersScreen(
 @Composable
 fun EnhancedTransferItem(transfer: TransferDetails) {
     Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            shape = RoundedCornerShape(16.dp)
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(16.dp)
     ) {
         Box(
-                modifier =
-                        Modifier.fillMaxWidth()
-                                .background(
-                                        Brush.horizontalGradient(
-                                                colors =
-                                                        listOf(
-                                                                MaterialTheme.colorScheme
-                                                                        .primaryContainer.copy(
-                                                                        alpha = 0.1f
-                                                                ),
-                                                                MaterialTheme.colorScheme
-                                                                        .secondaryContainer.copy(
-                                                                        alpha = 0.05f
-                                                                )
-                                                        )
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors =
+                                listOf(
+                                    MaterialTheme.colorScheme
+                                        .primaryContainer.copy(
+                                            alpha = 0.1f
+                                        ),
+                                    MaterialTheme.colorScheme
+                                        .secondaryContainer.copy(
+                                            alpha = 0.05f
                                         )
                                 )
+                        )
+                    )
         ) {
-            Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)) {
                 // Player name and position
                 Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                            text = transfer.player.name,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                        text = transfer.player.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Card(
-                            colors =
-                                    CardDefaults.cardColors(
-                                            containerColor =
-                                                    MaterialTheme.colorScheme.primary.copy(
-                                                            alpha = 0.1f
-                                                    )
-                                    ),
-                            shape = RoundedCornerShape(8.dp)
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor =
+                                    MaterialTheme.colorScheme.primary.copy(
+                                        alpha = 0.1f
+                                    )
+                            ),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                                text = transfer.type,
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            text = transfer.type,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                         )
                     }
                 }
@@ -289,66 +298,72 @@ fun EnhancedTransferItem(transfer: TransferDetails) {
 
                 // Transfer route
                 Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     // From team
                     Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.weight(1f)
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f)
                     ) {
                         AsyncImage(
-                                model = transfer.teamOut.logo,
-                                contentDescription = null,
-                                modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                            model = transfer.teamOut.logo,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                                text = transfer.teamOut.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            text = transfer.teamOut.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
 
                     // Arrow
                     Card(
-                            colors =
-                                    CardDefaults.cardColors(
-                                            containerColor =
-                                                    MaterialTheme.colorScheme.secondary.copy(
-                                                            alpha = 0.1f
-                                                    )
-                                    ),
-                            shape = RoundedCornerShape(12.dp)
+                        colors =
+                            CardDefaults.cardColors(
+                                containerColor =
+                                    MaterialTheme.colorScheme.secondary.copy(
+                                        alpha = 0.1f
+                                    )
+                            ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Icon(
-                                imageVector = Icons.Filled.ArrowForward,
-                                contentDescription = "transferred to",
-                                modifier = Modifier.size(40.dp).padding(8.dp),
-                                tint = MaterialTheme.colorScheme.secondary
+                            imageVector = Icons.Filled.ArrowForward,
+                            contentDescription = "transferred to",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(8.dp),
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
 
                     // To team
                     Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.weight(1f)
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f)
                     ) {
                         AsyncImage(
-                                model = transfer.teamIn.logo,
-                                contentDescription = null,
-                                modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                            model = transfer.teamIn.logo,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                                text = transfer.teamIn.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            text = transfer.teamIn.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
@@ -357,14 +372,14 @@ fun EnhancedTransferItem(transfer: TransferDetails) {
 
                 // Transfer date
                 Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                            text = "Transfer Date: ${transfer.date}",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "Transfer Date: ${transfer.date}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
