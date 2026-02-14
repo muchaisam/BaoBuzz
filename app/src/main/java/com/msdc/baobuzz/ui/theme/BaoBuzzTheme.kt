@@ -36,55 +36,55 @@ object BaoBuzzColors {
 }
 
 private val DarkColorScheme =
-        darkColorScheme(
-                primary = BaoBuzzColors.PrimaryBlue,
-                secondary = BaoBuzzColors.AccentOrange,
-                tertiary = BaoBuzzColors.AccentGreen,
-                error = BaoBuzzColors.ErrorRed,
-                background = BaoBuzzColors.BackgroundDark,
-                surface = BaoBuzzColors.SurfaceDark,
-                surfaceVariant = BaoBuzzColors.SurfaceVariantDark,
-                onPrimary = Color.White,
-                onSecondary = Color.White,
-                onTertiary = Color.White,
-                onError = Color.White,
-                onBackground = BaoBuzzColors.OnSurfaceDark,
-                onSurface = BaoBuzzColors.OnSurfaceDark,
-                onSurfaceVariant = BaoBuzzColors.OnSurfaceVariantDark,
-                primaryContainer = BaoBuzzColors.PrimaryBlueLight,
-                secondaryContainer = BaoBuzzColors.AccentOrange.copy(alpha = 0.1f),
-                tertiaryContainer = BaoBuzzColors.AccentGreen.copy(alpha = 0.1f)
-        )
+    darkColorScheme(
+        primary = BaoBuzzColors.PrimaryBlue,
+        secondary = BaoBuzzColors.AccentOrange,
+        tertiary = BaoBuzzColors.AccentGreen,
+        error = BaoBuzzColors.ErrorRed,
+        background = BaoBuzzColors.BackgroundDark,
+        surface = BaoBuzzColors.SurfaceDark,
+        surfaceVariant = BaoBuzzColors.SurfaceVariantDark,
+        onPrimary = Color.White,
+        onSecondary = Color.White,
+        onTertiary = Color.White,
+        onError = Color.White,
+        onBackground = BaoBuzzColors.OnSurfaceDark,
+        onSurface = BaoBuzzColors.OnSurfaceDark,
+        onSurfaceVariant = BaoBuzzColors.OnSurfaceVariantDark,
+        primaryContainer = BaoBuzzColors.PrimaryBlueLight,
+        secondaryContainer = BaoBuzzColors.AccentOrange.copy(alpha = 0.1f),
+        tertiaryContainer = BaoBuzzColors.AccentGreen.copy(alpha = 0.1f)
+    )
 
 private val LightColorScheme =
-        lightColorScheme(
-                primary = BaoBuzzColors.PrimaryBlue,
-                secondary = BaoBuzzColors.AccentOrange,
-                tertiary = BaoBuzzColors.AccentGreen,
-                error = BaoBuzzColors.ErrorRed,
-                background = BaoBuzzColors.BackgroundLight,
-                surface = BaoBuzzColors.SurfaceLight,
-                surfaceVariant = BaoBuzzColors.SurfaceVariantLight,
-                onPrimary = Color.White,
-                onSecondary = Color.White,
-                onTertiary = Color.White,
-                onError = Color.White,
-                onBackground = BaoBuzzColors.OnSurfaceLight,
-                onSurface = BaoBuzzColors.OnSurfaceLight,
-                onSurfaceVariant = BaoBuzzColors.OnSurfaceVariantLight,
-                primaryContainer = BaoBuzzColors.PrimaryBlueLight.copy(alpha = 0.1f),
-                secondaryContainer = BaoBuzzColors.AccentOrange.copy(alpha = 0.1f),
-                tertiaryContainer = BaoBuzzColors.AccentGreen.copy(alpha = 0.1f)
-        )
+    lightColorScheme(
+        primary = BaoBuzzColors.PrimaryBlue,
+        secondary = BaoBuzzColors.AccentOrange,
+        tertiary = BaoBuzzColors.AccentGreen,
+        error = BaoBuzzColors.ErrorRed,
+        background = BaoBuzzColors.BackgroundLight,
+        surface = BaoBuzzColors.SurfaceLight,
+        surfaceVariant = BaoBuzzColors.SurfaceVariantLight,
+        onPrimary = Color.White,
+        onSecondary = Color.White,
+        onTertiary = Color.White,
+        onError = Color.White,
+        onBackground = BaoBuzzColors.OnSurfaceLight,
+        onSurface = BaoBuzzColors.OnSurfaceLight,
+        onSurfaceVariant = BaoBuzzColors.OnSurfaceVariantLight,
+        primaryContainer = BaoBuzzColors.PrimaryBlueLight.copy(alpha = 0.1f),
+        secondaryContainer = BaoBuzzColors.AccentOrange.copy(alpha = 0.1f),
+        tertiaryContainer = BaoBuzzColors.AccentGreen.copy(alpha = 0.1f)
+    )
 
 @Composable
 fun BaoBuzzTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colorScheme =
-            if (darkTheme) {
-                DarkColorScheme
-            } else {
-                LightColorScheme
-            }
+        if (darkTheme) {
+            DarkColorScheme
+        } else {
+            LightColorScheme
+        }
 
     MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
 }
