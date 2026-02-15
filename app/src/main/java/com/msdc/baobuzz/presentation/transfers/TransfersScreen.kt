@@ -50,8 +50,7 @@ fun TransfersScreen(
     viewModel: TransfersViewModel = hiltViewModel(),
     navController: NavHostController? = null
 ) {
-    val transfers by viewModel.transfers.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(teamId) { viewModel.getTransfers(teamId) }
 
@@ -92,7 +91,8 @@ fun TransfersScreen(
                     .padding(paddingValues)
                     .padding(16.dp)
         ) {
-            if (isLoading) {
+            when (val state = uiState) {
+                is TransfersUiState.Loading, is TransfersUiState.Idle -> {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors =
@@ -131,98 +131,106 @@ fun TransfersScreen(
                         }
                     }
                 }
-            } else if (transfers.isEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors =
-                        CardDefaults.cardColors(
+            }
+                is TransfersUiState.Error -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Brush.verticalGradient(
-                                        colors =
-                                            listOf(
-                                                MaterialTheme
-                                                    .colorScheme
-                                                    .primary.copy(
-                                                        alpha = 0.05f
-                                                    ),
-                                                MaterialTheme
-                                                    .colorScheme
-                                                    .primaryContainer
-                                                    .copy(
-                                                        alpha =
-                                                            0.1f
-                                                    )
-                                            )
-                                    )
-                                )
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        shape = RoundedCornerShape(16.dp)
                     ) {
-                        Column(
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            contentAlignment = Alignment.Center
                         ) {
-                            Card(
-                                modifier = Modifier.size(80.dp),
-                                colors =
-                                    CardDefaults.cardColors(
-                                        containerColor =
-                                            MaterialTheme.colorScheme.primary.copy(
-                                                alpha = 0.1f
-                                            )
-                                    ),
-                                shape = RoundedCornerShape(20.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.ArrowForward,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(40.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
                             Text(
-                                text = "No Transfers Found",
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text =
-                                    "This team doesn't have any recorded transfers in our database.",
+                                text = state.message,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                color = MaterialTheme.colorScheme.error
                             )
                         }
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    // ✅ ADDED KEY - Performance optimization
-                    items(
-                        items = transfers,
-                        key = { it.id }
-                    ) { transfer ->
-                        EnhancedTransferItem(transfer = transfer)
+                is TransfersUiState.Success -> {
+                    if (state.transfers.isEmpty()) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
+                                            )
+                                        )
+                                    )
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(32.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    Card(
+                                        modifier = Modifier.size(80.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                        ),
+                                        shape = RoundedCornerShape(20.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.ArrowForward,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(40.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = "No Transfers Found",
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "This team doesn't have any recorded transfers in our database.",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            items(
+                                items = state.transfers,
+                                key = { it.id }
+                            ) { transfer ->
+                                EnhancedTransferItem(transfer = transfer)
+                            }
+                        }
                     }
                 }
             }
