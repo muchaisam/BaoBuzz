@@ -7,6 +7,7 @@ object BaoBuzzRoutes {
     const val ONBOARDING_FEATURES = "onboarding_features"
     const val ONBOARDING_LEAGUES = "onboarding_leagues"
     const val ONBOARDING_TEAMS = "onboarding_teams"
+    const val ONBOARDING = "onboarding"
     const val MAIN_APP = "main_app"
 
     // Main app destinations
