@@ -39,10 +39,16 @@ import com.msdc.baobuzz.features.home.HomeScreen
 import com.msdc.baobuzz.features.leagues.LeaguesScreen
 import com.msdc.baobuzz.features.settings.SettingsScreen
 import com.msdc.baobuzz.features.stats.StatsScreen
+import com.msdc.baobuzz.presentation.transfers.TransfersScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainAppScreen(navController: NavHostController = rememberNavController()) {
+fun MainAppScreen(
+    navController: NavHostController = rememberNavController(),
+    onNavigateToQuiz: () -> Unit = {},
+    onNavigateToFacts: () -> Unit = {},
+    onNavigateToComparison: () -> Unit = {}
+) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -103,15 +109,14 @@ fun MainAppScreen(navController: NavHostController = rememberNavController()) {
             composable(BaoBuzzRoutes.HOME) {
                 HomeScreen(
                     onNavigateToOnboarding = {
-                        navController.navigate(BaoBuzzRoutes.ONBOARDING_WELCOME) {
+                        navController.navigate(BaoBuzzRoutes.ONBOARDING) {
                             popUpTo(BaoBuzzRoutes.HOME) { inclusive = true }
                         }
                     },
                     onNavigateToSettings = { navController.navigate(BaoBuzzRoutes.SETTINGS) },
-                    // NEW FEATURE NAVIGATION 🎯📖🔄
-                    onNavigateToQuiz = { navController.navigate(BaoBuzzRoutes.QUIZ) },
-                    onNavigateToFacts = { navController.navigate(BaoBuzzRoutes.FACTS) },
-                    onNavigateToComparison = { navController.navigate(BaoBuzzRoutes.COMPARISON) }
+                    onNavigateToQuiz = onNavigateToQuiz,
+                    onNavigateToFacts = onNavigateToFacts,
+                    onNavigateToComparison = onNavigateToComparison
                 )
             }
 
@@ -119,10 +124,17 @@ fun MainAppScreen(navController: NavHostController = rememberNavController()) {
 
             composable(BaoBuzzRoutes.STATS) { StatsScreen() }
 
+            composable(BaoBuzzRoutes.TRANSFERS) {
+                val teamId = it.arguments?.getString("teamId")?.toIntOrNull()
+                if (teamId != null) {
+                    TransfersScreen(teamId = teamId, navController = navController)
+                }
+            }
+
             composable(BaoBuzzRoutes.SETTINGS) {
                 SettingsScreen(
                     onNavigateToOnboarding = {
-                        navController.navigate(BaoBuzzRoutes.ONBOARDING_WELCOME) {
+                        navController.navigate(BaoBuzzRoutes.ONBOARDING) {
                             popUpTo(BaoBuzzRoutes.HOME) { inclusive = true }
                         }
                     },
