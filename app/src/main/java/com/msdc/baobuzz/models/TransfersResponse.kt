@@ -1,11 +1,14 @@
 package com.msdc.baobuzz.models
 
+import kotlinx.serialization.Serializable
+
 data class ApiTransfer(
     val player: Player,
     val update: String,
     val transfers: List<TransferDetail>
 )
 
+@Serializable
 data class Player(
     val id: Int,
     val name: String

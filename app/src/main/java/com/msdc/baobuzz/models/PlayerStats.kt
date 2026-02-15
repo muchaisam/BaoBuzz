@@ -1,9 +1,16 @@
 package com.msdc.baobuzz.models
+
+import androidx.compose.runtime.Immutable
+
+// ✅ All player stats models marked @Immutable for Compose performance
+
+@Immutable
 data class PlayerStats(
     val player: PlayerStat,
     val statistics: List<Statistics>
 )
 
+@Immutable
 data class PlayerStat(
     val id: Int,
     val name: String,
@@ -18,12 +25,14 @@ data class PlayerStat(
     val photo: String
 )
 
+@Immutable
 data class Birth(
     val date: String,
     val place: String?,
     val country: String?
 )
 
+@Immutable
 data class Statistics(
     val team: PlayerTeam,
     val league: PlayerLeague,
@@ -40,12 +49,14 @@ data class Statistics(
     val penalty: Penalty
 )
 
+@Immutable
 data class PlayerTeam(
     val id: Int,
     val name: String,
     val logo: String
 )
 
+@Immutable
 data class PlayerLeague(
     val id: Int,
     val name: String,
@@ -55,6 +66,7 @@ data class PlayerLeague(
     val season: Int
 )
 
+@Immutable
 data class Games(
     val appearances: Int?,
     val lineups: Int?,
@@ -65,17 +77,20 @@ data class Games(
     val captain: Boolean
 )
 
+@Immutable
 data class Substitutes(
     val `in`: Int?,
     val out: Int?,
     val bench: Int?
 )
 
+@Immutable
 data class Shots(
     val total: Int?,
     val on: Int?
 )
 
+@Immutable
 data class PlayerGoals(
     val total: Int?,
     val conceded: Int?,
@@ -83,40 +98,47 @@ data class PlayerGoals(
     val saves: Int?
 )
 
+@Immutable
 data class Passes(
     val total: Int?,
     val key: Int?,
     val accuracy: Int?
 )
 
+@Immutable
 data class Tackles(
     val total: Int?,
     val blocks: Int?,
     val interceptions: Int?
 )
 
+@Immutable
 data class Duels(
     val total: Int?,
     val won: Int?
 )
 
+@Immutable
 data class Dribbles(
     val attempts: Int?,
     val success: Int?,
     val past: Int?
 )
 
+@Immutable
 data class Fouls(
     val drawn: Int?,
     val committed: Int?
 )
 
+@Immutable
 data class Cards(
     val yellow: Int?,
     val yellowred: Int?,
     val red: Int?
 )
 
+@Immutable
 data class Penalty(
     val won: Int?,
     val committed: Int?,

@@ -4,12 +4,11 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".FootballApp"
         android:allowBackup="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -18,12 +17,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BaoBuzz"
         tools:targetApi="31">
-        <activity
-            android:name=".ui.LeagueSelectionActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ux.OnboardingActivity"
-            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -34,9 +27,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".HomeActivity"
-            android:exported="false" />
     </application>
 
 </manifest>
