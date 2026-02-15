@@ -22,7 +22,4 @@
         <item name="postSplashScreenTheme">@style/Base.Theme.BaoBuzz</item>
     </style>
 
-    <style name="CustomProgressDialogTheme" parent="Theme.AppCompat.Light.Dialog">
-        <item name="android:statusBarColor">@color/white</item>
-    </style>
 </resources>
