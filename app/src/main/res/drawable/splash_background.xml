@@ -2,8 +2,8 @@
     <item>
         <bitmap
             android:gravity="center"
+            android:scaleType="fitCenter"
             android:src="@drawable/app_logo"
-            android:tileMode="disabled"
-            android:scaleType="fitCenter" />
+            android:tileMode="disabled" />
     </item>
 </layer-list>
