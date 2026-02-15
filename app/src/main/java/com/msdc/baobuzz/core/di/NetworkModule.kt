@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.msdc.baobuzz.core.api.AuthInterceptor
 import com.msdc.baobuzz.core.api.RequestLimitInterceptor
 import com.msdc.baobuzz.core.api.interceptors.FootballDataAuthInterceptor
+import com.msdc.baobuzz.BuildConfig
 import com.msdc.baobuzz.core.api.interfaces.FootballDataApi
 import com.msdc.baobuzz.core.api.interfaces.OpenFootballApi
 import com.msdc.baobuzz.interfaces.FootballApi
@@ -52,7 +53,11 @@ object NetworkModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
     }
 
@@ -139,14 +144,7 @@ object NetworkModule {
     fun provideFootballDataAuthInterceptor(): FootballDataAuthInterceptor {
         // API key will be loaded from BuildConfig (local.properties)
         // For now, using a placeholder that can be replaced
-        val apiKey = try {
-            // Try to get from BuildConfig if available
-            val buildConfigClass = Class.forName("com.msdc.baobuzz.BuildConfig")
-            val field = buildConfigClass.getField("FOOTBALL_DATA_API_KEY")
-            field.get(null) as? String ?: ""
-        } catch (e: Exception) {
-            "" // Empty string if not configured yet
-        }
+        val apiKey = BuildConfig.FOOTBALL_DATA_API_KEY
         return FootballDataAuthInterceptor(apiKey)
     }
 
