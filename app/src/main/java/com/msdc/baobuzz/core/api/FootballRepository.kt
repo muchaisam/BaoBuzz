@@ -20,6 +20,12 @@ import com.msdc.baobuzz.models.footballdata.toDomainFixture
 import com.msdc.baobuzz.models.footballdata.toDomainPlayerStat
 import com.msdc.baobuzz.models.footballdata.toDomainTeam
 import com.msdc.baobuzz.models.footballdata.toDomainTeamStanding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -34,7 +40,6 @@ interface FootballRepository {
     suspend fun getTopScorers(leagueId: Int): List<PlayerStat>
     suspend fun getTopAssisters(leagueId: Int): List<PlayerStat>
 
-    // Enhanced methods for richer home screen content
     suspend fun getUpcomingFixtures(leagueIds: List<Int>, limit: Int = 10): List<UpcomingFixture>
     suspend fun getRecentResults(leagueIds: List<Int>, limit: Int = 10): List<RecentResult>
     suspend fun getSeasonSummary(leagueId: Int, season: Int? = null): SeasonSummary?
@@ -46,197 +51,199 @@ interface FootballRepository {
 class FootballRepositoryImpl
 @Inject
 constructor(
-    private val footballApi: FootballApi, // Keep for transfers (optional)
+    private val footballApi: FootballApi,
     @Named("football-data") private val footballDataApi: com.msdc.baobuzz.core.api.interfaces.FootballDataApi,
     private val apiRequestTracker: ApiRequestTracker,
     private val cache: FootballDataCache
 ) : FootballRepository {
 
-    // Map league IDs to football-data.org competition codes
     private fun getCompetitionCode(leagueId: Int): String? {
         return when (leagueId) {
-            39 -> "PL"    // Premier League
-            78 -> "BL1"   // Bundesliga
-            140 -> "PD"   // La Liga
-            135 -> "SA"   // Serie A
-            61 -> "FL1"   // Ligue 1
+            39 -> "PL"
+            78 -> "BL1"
+            140 -> "PD"
+            135 -> "SA"
+            61 -> "FL1"
             else -> null
         }
     }
 
-    override suspend fun getLiveMatches(leagueIds: List<Int>): List<LiveMatch> {
-        return try {
-            // Check cache first
-            cache.getLiveMatches()?.let { cachedMatches ->
-                return@getLiveMatches cachedMatches.filter { match ->
-                    leagueIds.any { leagueId ->
-                        match.homeTeam.id.toString().contains(leagueId.toString()) ||
-                                match.awayTeam.id.toString().contains(leagueId.toString())
+    override suspend fun getLiveMatches(leagueIds: List<Int>): List<LiveMatch> =
+        withContext(Dispatchers.IO) {
+            try {
+                // Check cache first
+                cache.getLiveMatches()?.let { cachedMatches ->
+                    return@withContext cachedMatches.filter { match ->
+                        leagueIds.any { leagueId ->
+                            match.leagueId == leagueId
+                        }
                     }
                 }
-            }
 
-            if (!apiRequestTracker.canMakeRequest()) {
-                return emptyList()
-            }
+                if (!apiRequestTracker.canMakeRequest()) {
+                    // Offline fallback: return expired cache if available
+                    Timber.w("Rate limit reached, attempting expired cache for live matches")
+                    return@withContext cache.getLiveMatches(ignoreExpiry = true) ?: emptyList()
+                }
 
-            val matches = mutableListOf<LiveMatch>()
+                val matches = mutableListOf<LiveMatch>()
 
-            leagueIds.forEach { leagueId ->
-                val response =
-                    footballApi.getFixtures(
-                        league = leagueId,
-                        season = getCurrentSeason(),
-                        live = "all"
-                    )
-
-                response.response?.forEach { fixtureResponse: ApiFixture ->
-                    matches.add(
-                        LiveMatch(
-                            id = fixtureResponse.fixture.id.toString(),
-                            homeTeam =
-                                Team(
-                                    id = fixtureResponse.teams.home.id,
-                                    name = fixtureResponse.teams.home.name,
-                                    code = null,
-                                    country = "",
-                                    founded = null,
-                                    national = false,
-                                    logo = fixtureResponse.teams.home.logo
-                                ),
-                            awayTeam =
-                                Team(
-                                    id = fixtureResponse.teams.away.id,
-                                    name = fixtureResponse.teams.away.name,
-                                    code = null,
-                                    country = "",
-                                    founded = null,
-                                    national = false,
-                                    logo = fixtureResponse.teams.away.logo
-                                ),
-                            homeScore = fixtureResponse.goals.home,
-                            awayScore = fixtureResponse.goals.away,
-                            status = fixtureResponse.fixture.status.long,
-                            minute = fixtureResponse.fixture.status.elapsed
+                leagueIds.forEach { leagueId ->
+                    try {
+                        val response = footballApi.getFixtures(
+                            league = leagueId,
+                            season = getCurrentSeason(),
+                            live = "all"
                         )
-                    )
-                }
 
-                apiRequestTracker.recordRequest()
-            }
+                        response.response?.forEach { fixtureResponse: ApiFixture ->
+                            matches.add(
+                                LiveMatch(
+                                    id = fixtureResponse.fixture.id.toString(),
+                                    homeTeam = Team(
+                                        id = fixtureResponse.teams.home.id,
+                                        name = fixtureResponse.teams.home.name,
+                                        code = null,
+                                        country = "",
+                                        founded = null,
+                                        national = false,
+                                        logo = fixtureResponse.teams.home.logo
+                                    ),
+                                    awayTeam = Team(
+                                        id = fixtureResponse.teams.away.id,
+                                        name = fixtureResponse.teams.away.name,
+                                        code = null,
+                                        country = "",
+                                        founded = null,
+                                        national = false,
+                                        logo = fixtureResponse.teams.away.logo
+                                    ),
+                                    homeScore = fixtureResponse.goals.home,
+                                    awayScore = fixtureResponse.goals.away,
+                                    status = fixtureResponse.fixture.status.long,
+                                    minute = fixtureResponse.fixture.status.elapsed,
+                                    leagueId = leagueId
+                                )
+                            )
+                        }
 
-            // Cache the results
-            cache.cacheLiveMatches(matches)
-            matches
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    override suspend fun getRecentTransfers(leagueIds: List<Int>): List<TransferDetails> {
-        return try {
-            // Check cache first
-            cache.getTransfers()?.let { cachedTransfers ->
-                return@getRecentTransfers cachedTransfers
-            }
-
-            if (!apiRequestTracker.canMakeRequest()) {
-                return emptyList()
-            }
-
-            val transfers = mutableListOf<TransferDetails>()
-
-            leagueIds.forEach { leagueId ->
-                val response =
-                    footballApi.getTransfers(
-                        team = null // Get all transfers for the league
-                    )
-
-                response.response?.take(10)?.forEach { transferResponse: ApiTransfer ->
-                    // For each transfer response, iterate through the transfer details
-                    transferResponse.transfers.forEach { transferDetail ->
-                        transfers.add(convertToTransferDetails(transferResponse, transferDetail))
+                        apiRequestTracker.recordRequest()
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to fetch live matches for league %d", leagueId)
                     }
                 }
 
-                apiRequestTracker.recordRequest()
+                cache.cacheLiveMatches(matches)
+                matches
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch live matches")
+                emptyList()
             }
+        }
 
-            val distinctTransfers =
-                transfers.distinctBy { "${it.player.id}_${it.date}" }.sortedByDescending {
-                    it.date
+    override suspend fun getRecentTransfers(leagueIds: List<Int>): List<TransferDetails> =
+        withContext(Dispatchers.IO) {
+            try {
+                cache.getTransfers()?.let { cachedTransfers ->
+                    return@withContext cachedTransfers
                 }
 
-            // Cache the results
-            cache.cacheTransfers(distinctTransfers)
-            distinctTransfers
-        } catch (e: Exception) {
-            emptyList()
+                if (!apiRequestTracker.canMakeRequest()) {
+                    Timber.w("Rate limit reached, attempting expired cache for transfers")
+                    return@withContext cache.getTransfers(ignoreExpiry = true) ?: emptyList()
+                }
+
+                val transfers = mutableListOf<TransferDetails>()
+
+                leagueIds.forEach { leagueId ->
+                    try {
+                        val response = footballApi.getTransfers(team = null)
+
+                        response.response?.take(10)?.forEach { transferResponse: ApiTransfer ->
+                            transferResponse.transfers.forEach { transferDetail ->
+                                transfers.add(
+                                    convertToTransferDetails(transferResponse, transferDetail)
+                                )
+                            }
+                        }
+
+                        apiRequestTracker.recordRequest()
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to fetch transfers for league %d", leagueId)
+                    }
+                }
+
+                val distinctTransfers =
+                    transfers.distinctBy { "${it.player.id}_${it.date}" }
+                        .sortedByDescending { it.date }
+
+                cache.cacheTransfers(distinctTransfers)
+                distinctTransfers
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch recent transfers")
+                emptyList()
+            }
         }
-    }
 
-    override suspend fun getLeagueStandings(leagueId: Int): LeagueStanding? {
-        return try {
-            // Check cache first
-            cache.getStandings(leagueId)?.let { cachedStanding ->
-                return@getLeagueStandings cachedStanding
-            }
+    override suspend fun getLeagueStandings(leagueId: Int): LeagueStanding? =
+        withContext(Dispatchers.IO) {
+            try {
+                cache.getStandings(leagueId)?.let { cachedStanding ->
+                    return@withContext cachedStanding
+                }
 
-            if (!apiRequestTracker.canMakeRequest()) {
-                return null
-            }
+                if (!apiRequestTracker.canMakeRequest()) {
+                    Timber.w("Rate limit reached, attempting expired cache for standings")
+                    return@withContext cache.getStandings(leagueId, ignoreExpiry = true)
+                }
 
-            // Get competition code for football-data.org
-            val competitionCode = getCompetitionCode(leagueId) ?: return null
+                val competitionCode = getCompetitionCode(leagueId)
+                    ?: return@withContext null
 
-            // Use new football-data.org API
-            val response = footballDataApi.getStandings(competitionCode)
+                val response = footballDataApi.getStandings(competitionCode)
+                val standingsTable = response.standings.firstOrNull()?.table
+                val competition = response.competition
 
-            val standingsTable = response.standings.firstOrNull()?.table
-            val competition = response.competition
+                if (standingsTable != null) {
+                    apiRequestTracker.recordRequest()
 
-            if (standingsTable != null) {
-                apiRequestTracker.recordRequest()
+                    val leagueStanding = LeagueStanding(
+                        leagueId = leagueId,
+                        leagueName = competition.name,
+                        leagueLogo = competition.emblem ?: "",
+                        teams = standingsTable.map { it.toDomainTeamStanding() }
+                    )
 
-                val leagueStanding = LeagueStanding(
-                    leagueId = leagueId,
-                    leagueName = competition.name,
-                    leagueLogo = competition.emblem ?: "",
-                    teams = standingsTable.map { it.toDomainTeamStanding() }
-                )
-
-                // Cache the result
-                cache.cacheStandings(leagueId, leagueStanding)
-                leagueStanding
-            } else {
+                    cache.cacheStandings(leagueId, leagueStanding)
+                    leagueStanding
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch standings for league %d", leagueId)
                 null
             }
-        } catch (e: Exception) {
-            null
         }
-    }
 
     override suspend fun getFixtures(
         leagueId: Int,
         from: String,
         to: String
-    ): List<com.msdc.baobuzz.core.models.Fixture> {
-        return try {
+    ): List<Fixture> = withContext(Dispatchers.IO) {
+        try {
             val cacheKey = "${leagueId}_${from}_${to}"
 
-            // Check cache first
             cache.getFixtures(cacheKey)?.let { cachedFixtures ->
-                return@getFixtures cachedFixtures
+                return@withContext cachedFixtures
             }
 
             if (!apiRequestTracker.canMakeRequest()) {
-                return emptyList()
+                return@withContext cache.getFixtures(cacheKey, ignoreExpiry = true) ?: emptyList()
             }
 
-            // Get competition code for football-data.org
-            val competitionCode = getCompetitionCode(leagueId) ?: return emptyList()
+            val competitionCode = getCompetitionCode(leagueId)
+                ?: return@withContext emptyList()
 
-            // Use new football-data.org API
             val response = footballDataApi.getMatches(
                 competitionCode = competitionCode,
                 dateFrom = from,
@@ -244,48 +251,46 @@ constructor(
             )
 
             val fixtures = response.matches.map { it.toDomainFixture() }
-
             apiRequestTracker.recordRequest()
 
-            // Cache the results
             cache.cacheFixtures(cacheKey, fixtures)
             fixtures
         } catch (e: Exception) {
+            Timber.e(e, "Failed to fetch fixtures for league %d", leagueId)
             emptyList()
         }
     }
 
-    override suspend fun getPlayerStats(leagueId: Int): List<PlayerStat> {
-        return try {
-            // Check cache first
-            cache.getTopScorers(leagueId)?.let { cachedStats ->
-                return@getPlayerStats cachedStats
+    override suspend fun getPlayerStats(leagueId: Int): List<PlayerStat> =
+        withContext(Dispatchers.IO) {
+            try {
+                cache.getTopScorers(leagueId)?.let { cachedStats ->
+                    return@withContext cachedStats
+                }
+
+                if (!apiRequestTracker.canMakeRequest()) {
+                    return@withContext cache.getTopScorers(leagueId, ignoreExpiry = true)
+                        ?: emptyList()
+                }
+
+                val competitionCode = getCompetitionCode(leagueId)
+                    ?: return@withContext emptyList()
+
+                val response = footballDataApi.getTopScorers(
+                    competitionCode = competitionCode,
+                    limit = 20
+                )
+
+                val players = response.scorers.map { it.toDomainPlayerStat() }
+                apiRequestTracker.recordRequest()
+
+                cache.cacheTopScorers(leagueId, players)
+                players
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch player stats for league %d", leagueId)
+                emptyList()
             }
-
-            if (!apiRequestTracker.canMakeRequest()) {
-                return emptyList()
-            }
-
-            // Get competition code for football-data.org
-            val competitionCode = getCompetitionCode(leagueId) ?: return emptyList()
-
-            // Use new football-data.org API
-            val response = footballDataApi.getTopScorers(
-                competitionCode = competitionCode,
-                limit = 20
-            )
-
-            val players = response.scorers.map { it.toDomainPlayerStat() }
-
-            apiRequestTracker.recordRequest()
-
-            // Cache the results
-            cache.cacheTopScorers(leagueId, players)
-            players
-        } catch (e: Exception) {
-            emptyList()
         }
-    }
 
     override suspend fun getTopScorers(leagueId: Int): List<PlayerStat> {
         return getPlayerStats(leagueId).sortedByDescending { it.goals }
@@ -298,238 +303,244 @@ constructor(
     override suspend fun getUpcomingFixtures(
         leagueIds: List<Int>,
         limit: Int
-    ): List<UpcomingFixture> {
-        return try {
-            // Check cache first
+    ): List<UpcomingFixture> = withContext(Dispatchers.IO) {
+        try {
             cache.getUpcomingFixtures()?.let { cachedFixtures ->
-                return@getUpcomingFixtures cachedFixtures
+                return@withContext cachedFixtures
                     .filter { fixture -> leagueIds.contains(fixture.leagueId) }
                     .take(limit)
             }
 
             if (!apiRequestTracker.canMakeRequest()) {
-                return emptyList()
+                return@withContext cache.getUpcomingFixtures(ignoreExpiry = true)
+                    ?.filter { leagueIds.contains(it.leagueId) }
+                    ?.take(limit)
+                    ?: emptyList()
             }
 
-            val fixtures = mutableListOf<UpcomingFixture>()
             val today = java.time.LocalDate.now().toString()
             val futureDate = java.time.LocalDate.now().plusDays(30).toString()
 
-            leagueIds.forEach { leagueId ->
-                val competitionCode = getCompetitionCode(leagueId) ?: return@forEach
+            val fixtures = supervisorScope {
+                leagueIds.map { leagueId ->
+                    async {
+                        try {
+                            val competitionCode = getCompetitionCode(leagueId) ?: return@async emptyList()
+                            val response = footballDataApi.getMatches(
+                                competitionCode = competitionCode,
+                                status = "SCHEDULED",
+                                dateFrom = today,
+                                dateTo = futureDate
+                            )
+                            apiRequestTracker.recordRequest()
 
-                // Use new football-data.org API
-                val response = footballDataApi.getMatches(
-                    competitionCode = competitionCode,
-                    status = "SCHEDULED",
-                    dateFrom = today,
-                    dateTo = futureDate
-                )
-
-                response.matches.take(limit / leagueIds.size + 1).forEach { match ->
-                    fixtures.add(
-                        UpcomingFixture(
-                            id = match.id.toString(),
-                            homeTeam = match.homeTeam.toDomainTeam(),
-                            awayTeam = match.awayTeam.toDomainTeam(),
-                            dateTime = match.utcDate,
-                            venue = "TBD",
-                            round = "Matchday ${match.matchday}",
-                            leagueId = leagueId,
-                            leagueName = match.competition?.name ?: "Unknown"
-                        )
-                    )
-                }
-
-                apiRequestTracker.recordRequest()
+                            response.matches.take(limit / leagueIds.size + 1).map { match ->
+                                UpcomingFixture(
+                                    id = match.id.toString(),
+                                    homeTeam = match.homeTeam.toDomainTeam(),
+                                    awayTeam = match.awayTeam.toDomainTeam(),
+                                    dateTime = match.utcDate,
+                                    venue = "TBD",
+                                    round = "Matchday ${match.matchday}",
+                                    leagueId = leagueId,
+                                    leagueName = match.competition?.name ?: "Unknown"
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to fetch upcoming fixtures for league %d", leagueId)
+                            emptyList()
+                        }
+                    }
+                }.awaitAll().flatten()
             }
 
             val sortedFixtures = fixtures.sortedBy { it.dateTime }.take(limit)
-
-            // Cache the results
             cache.cacheUpcomingFixtures(sortedFixtures)
             sortedFixtures
         } catch (e: Exception) {
+            Timber.e(e, "Failed to fetch upcoming fixtures")
             emptyList()
         }
     }
 
-    override suspend fun getRecentResults(leagueIds: List<Int>, limit: Int): List<RecentResult> {
-        return try {
-            // Check cache first
-            cache.getRecentResults()?.let { cachedResults ->
-                return@getRecentResults cachedResults
-                    .filter { result -> leagueIds.contains(result.leagueId) }
-                    .take(limit)
-            }
-
-            if (!apiRequestTracker.canMakeRequest()) {
-                return emptyList()
-            }
-
-            val results = mutableListOf<RecentResult>()
-            val pastDate = java.time.LocalDate.now().minusDays(30).toString()
-            val today = java.time.LocalDate.now().toString()
-
-            leagueIds.forEach { leagueId ->
-                val competitionCode = getCompetitionCode(leagueId) ?: return@forEach
-
-                // Use new football-data.org API
-                val response = footballDataApi.getMatches(
-                    competitionCode = competitionCode,
-                    status = "FINISHED",
-                    dateFrom = pastDate,
-                    dateTo = today
-                )
-
-                response.matches.take(limit / leagueIds.size + 1).forEach { match ->
-                    results.add(
-                        RecentResult(
-                            id = match.id.toString(),
-                            homeTeam = match.homeTeam.toDomainTeam(),
-                            awayTeam = match.awayTeam.toDomainTeam(),
-                            homeScore = match.score.fullTime?.home ?: 0,
-                            awayScore = match.score.fullTime?.away ?: 0,
-                            date = match.utcDate,
-                            round = "Matchday ${match.matchday}",
-                            leagueId = leagueId,
-                            leagueName = match.competition?.name ?: "Unknown"
-                        )
-                    )
+    override suspend fun getRecentResults(leagueIds: List<Int>, limit: Int): List<RecentResult> =
+        withContext(Dispatchers.IO) {
+            try {
+                cache.getRecentResults()?.let { cachedResults ->
+                    return@withContext cachedResults
+                        .filter { result -> leagueIds.contains(result.leagueId) }
+                        .take(limit)
                 }
 
-                apiRequestTracker.recordRequest()
+                if (!apiRequestTracker.canMakeRequest()) {
+                    return@withContext cache.getRecentResults(ignoreExpiry = true)
+                        ?.filter { leagueIds.contains(it.leagueId) }
+                        ?.take(limit)
+                        ?: emptyList()
+                }
+
+                val pastDate = java.time.LocalDate.now().minusDays(30).toString()
+                val today = java.time.LocalDate.now().toString()
+
+                val results = supervisorScope {
+                    leagueIds.map { leagueId ->
+                        async {
+                            try {
+                                val competitionCode = getCompetitionCode(leagueId) ?: return@async emptyList()
+                                val response = footballDataApi.getMatches(
+                                    competitionCode = competitionCode,
+                                    status = "FINISHED",
+                                    dateFrom = pastDate,
+                                    dateTo = today
+                                )
+                                apiRequestTracker.recordRequest()
+
+                                response.matches.take(limit / leagueIds.size + 1).map { match ->
+                                    RecentResult(
+                                        id = match.id.toString(),
+                                        homeTeam = match.homeTeam.toDomainTeam(),
+                                        awayTeam = match.awayTeam.toDomainTeam(),
+                                        homeScore = match.score.fullTime?.home ?: 0,
+                                        awayScore = match.score.fullTime?.away ?: 0,
+                                        date = match.utcDate,
+                                        round = "Matchday ${match.matchday}",
+                                        leagueId = leagueId,
+                                        leagueName = match.competition?.name ?: "Unknown"
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                Timber.e(e, "Failed to fetch recent results for league %d", leagueId)
+                                emptyList()
+                            }
+                        }
+                    }.awaitAll().flatten()
+                }
+
+                val sortedResults = results.sortedByDescending { it.date }.take(limit)
+                cache.cacheRecentResults(sortedResults)
+                sortedResults
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch recent results")
+                emptyList()
             }
-
-            val sortedResults = results.sortedByDescending { it.date }.take(limit)
-
-            // Cache the results
-            cache.cacheRecentResults(sortedResults)
-            sortedResults
-        } catch (e: Exception) {
-            emptyList()
         }
-    }
 
-    override suspend fun getSeasonSummary(leagueId: Int, season: Int?): SeasonSummary? {
-        return try {
-            if (!apiRequestTracker.canMakeRequest()) {
-                return null
-            }
+    override suspend fun getSeasonSummary(leagueId: Int, season: Int?): SeasonSummary? =
+        withContext(Dispatchers.IO) {
+            try {
+                if (!apiRequestTracker.canMakeRequest()) {
+                    return@withContext null
+                }
 
-            // Get competition code for football-data.org
-            val competitionCode = getCompetitionCode(leagueId) ?: return null
+                val competitionCode = getCompetitionCode(leagueId)
+                    ?: return@withContext null
 
-            // Use new football-data.org API
-            val standingsResponse = footballDataApi.getStandings(competitionCode)
+                val standingsResponse = footballDataApi.getStandings(competitionCode)
+                val table = standingsResponse.standings.firstOrNull()?.table
+                val champion = table?.firstOrNull()
+                val competition = standingsResponse.competition
 
-            val table = standingsResponse.standings.firstOrNull()?.table
-            val champion = table?.firstOrNull()
-            val competition = standingsResponse.competition
+                if (table != null) {
+                    val topScorersList = getTopScorers(leagueId)
+                    val topScorer = topScorersList.firstOrNull()
+                    apiRequestTracker.recordRequest()
 
-            if (table != null) {
-                // Get top scorer for the season
-                val topScorersList = getTopScorers(leagueId)
-                val topScorer = topScorersList.firstOrNull()
-
-                apiRequestTracker.recordRequest()
-
-                SeasonSummary(
-                    leagueId = leagueId,
-                    leagueName = competition.name,
-                    leagueLogo = competition.emblem ?: "",
-                    season = getCurrentSeason(),
-                    champion = champion?.let { it.team.toDomainTeam() },
-                    topScorer = topScorer,
-                    totalGoals = table.sumOf { it.goalsFor },
-                    totalMatches = table.sumOf { it.playedGames },
-                    isCurrentSeason = true
-                )
-            } else {
+                    SeasonSummary(
+                        leagueId = leagueId,
+                        leagueName = competition.name,
+                        leagueLogo = competition.emblem ?: "",
+                        season = getCurrentSeason(),
+                        champion = champion?.let { it.team.toDomainTeam() },
+                        topScorer = topScorer,
+                        totalGoals = table.sumOf { it.goalsFor },
+                        totalMatches = table.sumOf { it.playedGames },
+                        isCurrentSeason = true
+                    )
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch season summary for league %d", leagueId)
                 null
             }
-        } catch (e: Exception) {
-            null
         }
-    }
 
-    override suspend fun getLeagueInsights(leagueIds: List<Int>): List<LeagueInsight> {
-        return try {
-            // Check cache first
-            cache.getLeagueInsights()?.let { cachedInsights ->
-                return@getLeagueInsights cachedInsights.filter { insight ->
-                    leagueIds.contains(insight.leagueId)
+    override suspend fun getLeagueInsights(leagueIds: List<Int>): List<LeagueInsight> =
+        withContext(Dispatchers.IO) {
+            try {
+                cache.getLeagueInsights()?.let { cachedInsights ->
+                    return@withContext cachedInsights.filter { insight ->
+                        leagueIds.contains(insight.leagueId)
+                    }
                 }
-            }
 
-            val insights = mutableListOf<LeagueInsight>()
+                // Parallelize per-league insight fetching
+                val insights = supervisorScope {
+                    leagueIds.map { leagueId ->
+                        async {
+                            try {
+                                val standings = getLeagueStandings(leagueId)
+                                    ?: return@async null
+                                val upcomingFixtures = getUpcomingFixtures(listOf(leagueId), 1)
+                                val recentResults = getRecentResults(listOf(leagueId), 1)
+                                val topScorers = getTopScorers(leagueId)
 
-            leagueIds.forEach { leagueId ->
-                val standings = getLeagueStandings(leagueId)
-                val upcomingFixtures = getUpcomingFixtures(listOf(leagueId), 1)
-                val recentResults = getRecentResults(listOf(leagueId), 1)
-                val topScorers = getTopScorers(leagueId)
-
-                if (standings != null) {
-                    insights.add(
-                        LeagueInsight(
-                            leagueId = leagueId,
-                            leagueName = standings.leagueName,
-                            leagueLogo = standings.leagueLogo,
-                            currentStanding = standings.teams.firstOrNull(),
-                            nextFixture = upcomingFixtures.firstOrNull(),
-                            lastResult = recentResults.firstOrNull(),
-                            topScorer = topScorers.firstOrNull(),
-                            matchesPlayed = standings.teams.firstOrNull()?.played ?: 0,
-                            matchesRemaining =
-                                38 -
-                                        (standings.teams.firstOrNull()?.played
-                                            ?: 0) // Assuming 38 match season
-                        )
-                    )
+                                LeagueInsight(
+                                    leagueId = leagueId,
+                                    leagueName = standings.leagueName,
+                                    leagueLogo = standings.leagueLogo,
+                                    currentStanding = standings.teams.firstOrNull(),
+                                    nextFixture = upcomingFixtures.firstOrNull(),
+                                    lastResult = recentResults.firstOrNull(),
+                                    topScorer = topScorers.firstOrNull(),
+                                    matchesPlayed = standings.teams.firstOrNull()?.played ?: 0,
+                                    matchesRemaining = 38 - (standings.teams.firstOrNull()?.played ?: 0)
+                                )
+                            } catch (e: Exception) {
+                                Timber.e(e, "Failed to fetch insights for league %d", leagueId)
+                                null
+                            }
+                        }
+                    }.awaitAll().filterNotNull()
                 }
-            }
 
-            // Cache the results
-            cache.cacheLeagueInsights(insights)
-            insights
-        } catch (e: Exception) {
-            emptyList()
+                cache.cacheLeagueInsights(insights)
+                insights
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch league insights")
+                emptyList()
+            }
         }
-    }
 
-    override suspend fun getTransfersByTeam(teamId: Int): List<TransferDetails> {
-        return try {
-            // Check cache first
-            cache.getTransfers(teamId.toString())?.let { cachedTransfers ->
-                return@getTransfersByTeam cachedTransfers
-            }
+    override suspend fun getTransfersByTeam(teamId: Int): List<TransferDetails> =
+        withContext(Dispatchers.IO) {
+            try {
+                cache.getTransfers(teamId.toString())?.let { cachedTransfers ->
+                    return@withContext cachedTransfers
+                }
 
-            if (!apiRequestTracker.canMakeRequest()) {
-                return emptyList()
-            }
+                if (!apiRequestTracker.canMakeRequest()) {
+                    return@withContext cache.getTransfers(teamId.toString(), ignoreExpiry = true)
+                        ?: emptyList()
+                }
 
-            val response = footballApi.getTransfersByTeam(team = teamId)
+                val response = footballApi.getTransfersByTeam(team = teamId)
 
-            val transfers =
-                response.response?.flatMap { transferResponse ->
+                val transfers = response.response?.flatMap { transferResponse ->
                     transferResponse.transfers.map { transferDetail ->
                         convertToTransferDetails(transferResponse, transferDetail)
                     }
-                }
-                    ?: emptyList()
+                } ?: emptyList()
 
-            apiRequestTracker.recordRequest()
-
-            // Cache the results
-            cache.cacheTransfers(teamId.toString(), transfers)
-            transfers
-        } catch (e: Exception) {
-            emptyList()
+                apiRequestTracker.recordRequest()
+                cache.cacheTransfers(teamId.toString(), transfers)
+                transfers
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch transfers for team %d", teamId)
+                emptyList()
+            }
         }
-    }
 
-    // Utility methods to convert between models
     private fun convertToTransferDetails(
         transferResponse: ApiTransfer,
         transferDetail: TransferDetail
@@ -537,27 +548,26 @@ constructor(
         return TransferDetails(
             date = transferDetail.date,
             type = transferDetail.type,
-            teamIn =
-                TeamDetails(
-                    id = transferDetail.teams.`in`.id,
-                    name = transferDetail.teams.`in`.name,
-                    logo = transferDetail.teams.`in`.logo
-                ),
-            teamOut =
-                TeamDetails(
-                    id = transferDetail.teams.out.id,
-                    name = transferDetail.teams.out.name,
-                    logo = transferDetail.teams.out.logo
-                ),
-            player =
-                PlayerDetails(
-                    id = transferResponse.player.id,
-                    name = transferResponse.player.name
-                )
+            teamIn = TeamDetails(
+                id = transferDetail.teams.`in`.id,
+                name = transferDetail.teams.`in`.name,
+                logo = transferDetail.teams.`in`.logo
+            ),
+            teamOut = TeamDetails(
+                id = transferDetail.teams.out.id,
+                name = transferDetail.teams.out.name,
+                logo = transferDetail.teams.out.logo
+            ),
+            player = PlayerDetails(
+                id = transferResponse.player.id,
+                name = transferResponse.player.name
+            )
         )
     }
 
     private fun getCurrentSeason(): Int {
-        return java.time.LocalDate.now().year
+        val now = java.time.LocalDate.now()
+        // Football seasons typically start in August
+        return if (now.monthValue >= 8) now.year else now.year - 1
     }
 }
