@@ -34,6 +34,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -1001,6 +1002,322 @@ private fun TopScorerRow(
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
+            )
+        }
+    }
+}
+
+/**
+ * Float Stat Comparison Card - For floating-point statistics
+ */
+@Composable
+private fun FloatStatComparisonCard(
+    label: String,
+    value1: Float,
+    value2: Float,
+    icon: String,
+    season1Label: String,
+    season2Label: String
+) {
+    val maxValue = maxOf(value1, value2)
+    val progress1 by animateFloatAsState(
+        targetValue = if (maxValue > 0) value1 / maxValue else 0f,
+        animationSpec = tween(durationMillis = 1000, easing = EaseOutCubic),
+        label = "progress1"
+    )
+    val progress2 by animateFloatAsState(
+        targetValue = if (maxValue > 0) value2 / maxValue else 0f,
+        animationSpec = tween(durationMillis = 1000, easing = EaseOutCubic),
+        label = "progress2"
+    )
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.08f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.02f)
+                        )
+                    )
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.15f),
+                            Color.White.copy(alpha = 0.05f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .padding(20.dp)
+        ) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = icon, style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Season 1 bar
+                FloatComparisonBar(
+                    label = season1Label,
+                    value = value1,
+                    progress = progress1,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Season 2 bar
+                FloatComparisonBar(
+                    label = season2Label,
+                    value = value2,
+                    progress = progress2,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+
+                // Winner indicator
+                if (value1 != value2) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    val winner = if (value1 > value2) season1Label else season2Label
+                    val difference = kotlin.math.abs(value1 - value2)
+                    Text(
+                        text = "🏆 $winner leads by ${String.format("%.2f", difference)}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (value1 > value2)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Float Comparison Bar
+ */
+@Composable
+private fun FloatComparisonBar(
+    label: String,
+    value: Float,
+    progress: Float,
+    color: Color
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = String.format("%.2f", value),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(12.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(color.copy(alpha = 0.15f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(progress)
+                    .fillMaxHeight()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(color, color.copy(alpha = 0.7f))
+                        ),
+                        RoundedCornerShape(6.dp)
+                    )
+            )
+        }
+    }
+}
+
+/**
+ * Analysis Summary Card - Shows key insights from comparison
+ */
+@Composable
+private fun AnalysisSummaryCard(comparison: SeasonComparison) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(28.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.12f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.03f)
+                        )
+                    )
+                )
+                .border(
+                    width = 1.5.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f),
+                            Color.White.copy(alpha = 0.08f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(28.dp)
+                )
+                .padding(24.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Header
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "📋", style = MaterialTheme.typography.headlineSmall)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Analysis Summary",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Divider(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                    thickness = 1.dp
+                )
+
+                // Key Insights
+                AnalysisInsight(
+                    icon = "🏆",
+                    title = "Championship Performance",
+                    value = if (comparison.differences.pointsDifference >= 0)
+                        "${comparison.season1.season} had ${comparison.differences.pointsDifference} more points"
+                    else
+                        "${comparison.season2.season} had ${kotlin.math.abs(comparison.differences.pointsDifference)} more points",
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                AnalysisInsight(
+                    icon = "⚽",
+                    title = "Goal Scoring",
+                    value = if (comparison.differences.goalsDifference >= 0)
+                        "${comparison.season1.season} had ${comparison.differences.goalsDifference} more goals"
+                    else
+                        "${comparison.season2.season} had ${kotlin.math.abs(comparison.differences.goalsDifference)} more goals",
+                    color = MaterialTheme.colorScheme.secondary
+                )
+
+                AnalysisInsight(
+                    icon = "📊",
+                    title = "Competitiveness",
+                    value = comparison.differences.competitivenessChange,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+
+                // Champions comparison
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                            RoundedCornerShape(16.dp)
+                        )
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "Champions",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "${comparison.season1.season}: ${comparison.season1.champion} (${comparison.season1.championPoints} pts)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "${comparison.season2.season}: ${comparison.season2.champion} (${comparison.season2.championPoints} pts)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Analysis Insight Row
+ */
+@Composable
+private fun AnalysisInsight(
+    icon: String,
+    title: String,
+    value: String,
+    color: Color
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            color.copy(alpha = 0.2f),
+                            Color.Transparent
+                        )
+                    ),
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = icon, style = MaterialTheme.typography.titleLarge)
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = color,
+                fontWeight = FontWeight.Bold
             )
         }
     }
