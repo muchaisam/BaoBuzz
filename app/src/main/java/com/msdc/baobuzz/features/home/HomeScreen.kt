@@ -2150,6 +2150,7 @@ private fun HomeFeaturesRow(
 /**
  * Feature Card - Individual feature card with glassmorphic design
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FeatureCard(
     modifier: Modifier = Modifier,
