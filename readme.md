@@ -162,4 +162,4 @@ MIT License. See [LICENSE](LICENSE).
 
 ## Author
 
-**Samuel Muchai** — [@muchaisam](https://github.com/muchaisam)
+**Samson Muchai** — [@muchaisam](https://github.com/muchaisam)
