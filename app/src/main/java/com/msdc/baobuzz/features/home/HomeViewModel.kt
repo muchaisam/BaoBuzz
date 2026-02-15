@@ -14,6 +14,8 @@ import com.msdc.baobuzz.core.models.UpcomingFixture
 import com.msdc.baobuzz.models.League
 import com.msdc.baobuzz.repository.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -111,45 +113,47 @@ constructor(
                 // Add a small delay to prevent rapid API calls during preference changes
                 delay(300)
 
-                // Load data for selected leagues in parallel
-                val liveMatches = footballRepository.getLiveMatches(selectedLeagueIds)
-                val recentTransfers = footballRepository.getRecentTransfers(selectedLeagueIds)
-                val leagueStandings =
-                    selectedLeagueIds.mapNotNull { leagueId ->
-                        try {
-                            footballRepository.getLeagueStandings(leagueId)
-                        } catch (e: Exception) {
-                            null // Skip failed league standings
+                // Load all data in parallel
+                coroutineScope {
+                    val liveMatchesDeferred = async { footballRepository.getLiveMatches(selectedLeagueIds) }
+                    val recentTransfersDeferred = async { footballRepository.getRecentTransfers(selectedLeagueIds) }
+                    val leagueStandingsDeferred = async {
+                        selectedLeagueIds.mapNotNull { leagueId ->
+                            try {
+                                footballRepository.getLeagueStandings(leagueId)
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                    }
+                    val upcomingFixturesDeferred = async { footballRepository.getUpcomingFixtures(selectedLeagueIds, 8) }
+                    val recentResultsDeferred = async { footballRepository.getRecentResults(selectedLeagueIds, 6) }
+                    val leagueInsightsDeferred = async { footballRepository.getLeagueInsights(selectedLeagueIds) }
+                    val topScorersDeferred = async {
+                        selectedLeagueIds.flatMap { leagueId ->
+                            try {
+                                footballRepository.getTopScorers(leagueId).take(3)
+                            } catch (e: Exception) {
+                                emptyList()
+                            }
                         }
                     }
 
-                // Enhanced content for richer home experience
-                val upcomingFixtures = footballRepository.getUpcomingFixtures(selectedLeagueIds, 8)
-                val recentResults = footballRepository.getRecentResults(selectedLeagueIds, 6)
-                val leagueInsights = footballRepository.getLeagueInsights(selectedLeagueIds)
-                val topScorers =
-                    selectedLeagueIds.flatMap { leagueId ->
-                        try {
-                            footballRepository.getTopScorers(leagueId).take(3)
-                        } catch (e: Exception) {
-                            emptyList()
-                        }
-                    }
-
-                _uiState.value =
-                    HomeUiState.Success(
-                        liveMatches = liveMatches,
-                        recentTransfers = recentTransfers,
-                        leagueStandings = leagueStandings,
-                        selectedLeagues =
-                            selectedLeagueIds.mapNotNull { leagueId ->
-                                LeagueData.getLeagueById(leagueId)
-                            },
-                        upcomingFixtures = upcomingFixtures,
-                        recentResults = recentResults,
-                        leagueInsights = leagueInsights,
-                        topScorers = topScorers
-                    )
+                    _uiState.value =
+                        HomeUiState.Success(
+                            liveMatches = liveMatchesDeferred.await(),
+                            recentTransfers = recentTransfersDeferred.await(),
+                            leagueStandings = leagueStandingsDeferred.await(),
+                            selectedLeagues =
+                                selectedLeagueIds.mapNotNull { leagueId ->
+                                    LeagueData.getLeagueById(leagueId)
+                                },
+                            upcomingFixtures = upcomingFixturesDeferred.await(),
+                            recentResults = recentResultsDeferred.await(),
+                            leagueInsights = leagueInsightsDeferred.await(),
+                            topScorers = topScorersDeferred.await()
+                        )
+                }
             } catch (e: Exception) {
                 _uiState.value =
                     HomeUiState.Error(
