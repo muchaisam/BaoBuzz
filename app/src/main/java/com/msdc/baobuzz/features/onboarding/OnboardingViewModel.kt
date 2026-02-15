@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.Stable
 import javax.inject.Inject
 
 @HiltViewModel
@@ -89,6 +90,7 @@ constructor(private val userPreferencesRepository: UserPreferencesRepository) : 
     }
 }
 
+@Stable
 data class OnboardingUiState(
     val availableLeagues: List<LeagueData.OnboardingLeague> = emptyList(),
     val selectedLeagueIds: Set<Int> = emptySet(),
