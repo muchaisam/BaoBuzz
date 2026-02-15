@@ -40,16 +40,21 @@ class FootballDataCache @Inject constructor(
         const val LEAGUE_INSIGHTS = "league_insights"
     }
 
-    // Live matches
-    suspend fun getLiveMatches(): List<LiveMatch>? = withContext(Dispatchers.IO) {
-        cacheDao.getCacheEntry(LIVE_MATCHES)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
-                jsonSerializer.deserializeList<LiveMatch>(cacheEntry.jsonData)
-            } else {
-                null
-            }
+    private suspend fun getEntry(key: String, ignoreExpiry: Boolean): CacheEntity? {
+        return if (ignoreExpiry) {
+            cacheDao.getCacheEntryIgnoringExpiry(key)
+        } else {
+            cacheDao.getCacheEntry(key)
         }
     }
+
+    // Live matches
+    suspend fun getLiveMatches(ignoreExpiry: Boolean = false): List<LiveMatch>? =
+        withContext(Dispatchers.IO) {
+            getEntry(LIVE_MATCHES, ignoreExpiry)?.let { cacheEntry ->
+                jsonSerializer.deserializeList<LiveMatch>(cacheEntry.jsonData)
+            }
+        }
 
     suspend fun cacheLiveMatches(data: List<LiveMatch>) = withContext(Dispatchers.IO) {
         val cacheEntry = CacheEntity(
@@ -63,15 +68,12 @@ class FootballDataCache @Inject constructor(
     }
 
     // Transfers
-    suspend fun getTransfers(): List<TransferDetails>? = withContext(Dispatchers.IO) {
-        cacheDao.getCacheEntry(TRANSFERS)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
+    suspend fun getTransfers(ignoreExpiry: Boolean = false): List<TransferDetails>? =
+        withContext(Dispatchers.IO) {
+            getEntry(TRANSFERS, ignoreExpiry)?.let { cacheEntry ->
                 jsonSerializer.deserializeList<TransferDetails>(cacheEntry.jsonData)
-            } else {
-                null
             }
         }
-    }
 
     suspend fun cacheTransfers(data: List<TransferDetails>) = withContext(Dispatchers.IO) {
         val cacheEntry = CacheEntity(
@@ -85,16 +87,13 @@ class FootballDataCache @Inject constructor(
     }
 
     // Transfers for specific team
-    suspend fun getTransfers(teamId: String): List<TransferDetails>? = withContext(Dispatchers.IO) {
-        val cacheKey = "${TRANSFERS}_$teamId"
-        cacheDao.getCacheEntry(cacheKey)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
+    suspend fun getTransfers(teamId: String, ignoreExpiry: Boolean = false): List<TransferDetails>? =
+        withContext(Dispatchers.IO) {
+            val cacheKey = "${TRANSFERS}_$teamId"
+            getEntry(cacheKey, ignoreExpiry)?.let { cacheEntry ->
                 jsonSerializer.deserializeList<TransferDetails>(cacheEntry.jsonData)
-            } else {
-                null
             }
         }
-    }
 
     suspend fun cacheTransfers(teamId: String, data: List<TransferDetails>) =
         withContext(Dispatchers.IO) {
@@ -110,16 +109,13 @@ class FootballDataCache @Inject constructor(
         }
 
     // League standings
-    suspend fun getStandings(leagueId: Int): LeagueStanding? = withContext(Dispatchers.IO) {
-        val cacheKey = "${STANDINGS}_$leagueId"
-        cacheDao.getCacheEntry(cacheKey)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
+    suspend fun getStandings(leagueId: Int, ignoreExpiry: Boolean = false): LeagueStanding? =
+        withContext(Dispatchers.IO) {
+            val cacheKey = "${STANDINGS}_$leagueId"
+            getEntry(cacheKey, ignoreExpiry)?.let { cacheEntry ->
                 jsonSerializer.deserialize<LeagueStanding>(cacheEntry.jsonData)
-            } else {
-                null
             }
         }
-    }
 
     suspend fun cacheStandings(leagueId: Int, data: LeagueStanding) = withContext(Dispatchers.IO) {
         val cacheKey = "${STANDINGS}_$leagueId"
@@ -135,16 +131,13 @@ class FootballDataCache @Inject constructor(
     }
 
     // Fixtures
-    suspend fun getFixtures(key: String): List<Fixture>? = withContext(Dispatchers.IO) {
-        val cacheKey = "${FIXTURES}_$key"
-        cacheDao.getCacheEntry(cacheKey)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
+    suspend fun getFixtures(key: String, ignoreExpiry: Boolean = false): List<Fixture>? =
+        withContext(Dispatchers.IO) {
+            val cacheKey = "${FIXTURES}_$key"
+            getEntry(cacheKey, ignoreExpiry)?.let { cacheEntry ->
                 jsonSerializer.deserializeList<Fixture>(cacheEntry.jsonData)
-            } else {
-                null
             }
         }
-    }
 
     suspend fun cacheFixtures(key: String, data: List<Fixture>) = withContext(Dispatchers.IO) {
         val cacheKey = "${FIXTURES}_$key"
@@ -159,16 +152,13 @@ class FootballDataCache @Inject constructor(
     }
 
     // Top scorers
-    suspend fun getTopScorers(leagueId: Int): List<PlayerStat>? = withContext(Dispatchers.IO) {
-        val cacheKey = "${TOP_SCORERS}_$leagueId"
-        cacheDao.getCacheEntry(cacheKey)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
+    suspend fun getTopScorers(leagueId: Int, ignoreExpiry: Boolean = false): List<PlayerStat>? =
+        withContext(Dispatchers.IO) {
+            val cacheKey = "${TOP_SCORERS}_$leagueId"
+            getEntry(cacheKey, ignoreExpiry)?.let { cacheEntry ->
                 jsonSerializer.deserializeList<PlayerStat>(cacheEntry.jsonData)
-            } else {
-                null
             }
         }
-    }
 
     suspend fun cacheTopScorers(leagueId: Int, data: List<PlayerStat>) =
         withContext(Dispatchers.IO) {
@@ -185,15 +175,12 @@ class FootballDataCache @Inject constructor(
         }
 
     // Upcoming fixtures
-    suspend fun getUpcomingFixtures(): List<UpcomingFixture>? = withContext(Dispatchers.IO) {
-        cacheDao.getCacheEntry(UPCOMING_FIXTURES)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
+    suspend fun getUpcomingFixtures(ignoreExpiry: Boolean = false): List<UpcomingFixture>? =
+        withContext(Dispatchers.IO) {
+            getEntry(UPCOMING_FIXTURES, ignoreExpiry)?.let { cacheEntry ->
                 jsonSerializer.deserializeList<UpcomingFixture>(cacheEntry.jsonData)
-            } else {
-                null
             }
         }
-    }
 
     suspend fun cacheUpcomingFixtures(data: List<UpcomingFixture>) = withContext(Dispatchers.IO) {
         val cacheEntry = CacheEntity(
@@ -207,15 +194,12 @@ class FootballDataCache @Inject constructor(
     }
 
     // Recent results
-    suspend fun getRecentResults(): List<RecentResult>? = withContext(Dispatchers.IO) {
-        cacheDao.getCacheEntry(RECENT_RESULTS)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
+    suspend fun getRecentResults(ignoreExpiry: Boolean = false): List<RecentResult>? =
+        withContext(Dispatchers.IO) {
+            getEntry(RECENT_RESULTS, ignoreExpiry)?.let { cacheEntry ->
                 jsonSerializer.deserializeList<RecentResult>(cacheEntry.jsonData)
-            } else {
-                null
             }
         }
-    }
 
     suspend fun cacheRecentResults(data: List<RecentResult>) = withContext(Dispatchers.IO) {
         val cacheEntry = CacheEntity(
@@ -229,15 +213,12 @@ class FootballDataCache @Inject constructor(
     }
 
     // League insights
-    suspend fun getLeagueInsights(): List<LeagueInsight>? = withContext(Dispatchers.IO) {
-        cacheDao.getCacheEntry(LEAGUE_INSIGHTS)?.let { cacheEntry ->
-            if (System.currentTimeMillis() - cacheEntry.lastUpdated <= cacheEntry.expiryTime) {
+    suspend fun getLeagueInsights(ignoreExpiry: Boolean = false): List<LeagueInsight>? =
+        withContext(Dispatchers.IO) {
+            getEntry(LEAGUE_INSIGHTS, ignoreExpiry)?.let { cacheEntry ->
                 jsonSerializer.deserializeList<LeagueInsight>(cacheEntry.jsonData)
-            } else {
-                null
             }
         }
-    }
 
     suspend fun cacheLeagueInsights(data: List<LeagueInsight>) = withContext(Dispatchers.IO) {
         val cacheEntry = CacheEntity(
@@ -268,7 +249,7 @@ class FootballDataCache @Inject constructor(
     }
 
     suspend fun clearCacheByLeague(leagueId: Int) = withContext(Dispatchers.IO) {
-        val allEntries = cacheDao.getCacheEntriesByLeague("", leagueId)
+        val allEntries = cacheDao.getCacheEntriesByLeagueId(leagueId.toString())
         allEntries.forEach { entry ->
             cacheDao.deleteCacheEntry(entry.cacheKey)
         }
