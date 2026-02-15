@@ -12,8 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.msdc.baobuzz.features.main.MainAppScreen
-import com.msdc.baobuzz.features.onboarding.OnboardingLeagueSelectionScreen
-import com.msdc.baobuzz.features.onboarding.OnboardingWelcomeScreen
+import com.msdc.baobuzz.features.onboarding.OnboardingPagerScreen
 import com.msdc.baobuzz.features.splash.SplashScreen
 import com.msdc.baobuzz.presentation.transfers.TransfersScreen
 
@@ -45,7 +44,7 @@ fun BaoBuzzNavigation(navController: NavHostController = rememberNavController()
         ) {
             SplashScreen(
                 onNavigateToOnboarding = {
-                    navController.navigate(BaoBuzzRoutes.ONBOARDING_WELCOME) {
+                    navController.navigate(BaoBuzzRoutes.ONBOARDING) {
                         popUpTo(BaoBuzzRoutes.SPLASH) { inclusive = true }
                     }
                 },
@@ -57,52 +56,18 @@ fun BaoBuzzNavigation(navController: NavHostController = rememberNavController()
             )
         }
 
-        // Onboarding Welcome with slide animation
+        // Onboarding Pager (Welcome → Features → League Selection)
         composable(
-            route = BaoBuzzRoutes.ONBOARDING_WELCOME,
-            enterTransition = {
-                slideIntoContainer(
-                    animationSpec = tween(400, easing = EaseInOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.Start
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    animationSpec = tween(400, easing = EaseInOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End
-                )
-            }
+            route = BaoBuzzRoutes.ONBOARDING,
+            enterTransition = { fadeIn(animationSpec = tween(500, easing = EaseInOut)) },
+            exitTransition = { fadeOut(animationSpec = tween(300, easing = EaseInOut)) }
         ) {
-            OnboardingWelcomeScreen(
-                onContinue = { navController.navigate(BaoBuzzRoutes.ONBOARDING_LEAGUES) }
-            )
-        }
-
-        // League Selection with slide animation
-        composable(
-            route = BaoBuzzRoutes.ONBOARDING_LEAGUES,
-            enterTransition = {
-                slideIntoContainer(
-                    animationSpec = tween(400, easing = EaseInOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.Start
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    animationSpec = tween(400, easing = EaseInOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End
-                )
-            }
-        ) {
-            OnboardingLeagueSelectionScreen(
-                onContinue = { _ ->
-                    // For now, skip team selection and go straight to main app
-                    // In a full implementation, you'd navigate to team selection
+            OnboardingPagerScreen(
+                onComplete = {
                     navController.navigate(BaoBuzzRoutes.MAIN_APP) {
-                        popUpTo(BaoBuzzRoutes.ONBOARDING_WELCOME) { inclusive = true }
+                        popUpTo(BaoBuzzRoutes.ONBOARDING) { inclusive = true }
                     }
-                },
-                onBack = { navController.popBackStack() }
+                }
             )
         }
 
@@ -116,7 +81,13 @@ fun BaoBuzzNavigation(navController: NavHostController = rememberNavController()
                             towards = AnimatedContentTransitionScope.SlideDirection.Up
                         )
             }
-        ) { MainAppScreen() }
+        ) {
+            MainAppScreen(
+                onNavigateToQuiz = { navController.navigate(BaoBuzzRoutes.QUIZ) },
+                onNavigateToFacts = { navController.navigate(BaoBuzzRoutes.FACTS) },
+                onNavigateToComparison = { navController.navigate(BaoBuzzRoutes.COMPARISON) }
+            )
+        }
 
         // 🎯 QUIZ FEATURE - Daily Football Quiz
         composable(
