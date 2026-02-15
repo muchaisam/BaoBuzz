@@ -18,7 +18,8 @@ data class LiveMatch(
     val homeScore: Int?,
     val awayScore: Int?,
     val status: String,
-    val minute: Int?
+    val minute: Int?,
+    val leagueId: Int = 0
 )
 
 @Immutable
