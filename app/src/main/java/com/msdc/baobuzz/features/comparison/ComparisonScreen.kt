@@ -61,6 +61,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.msdc.baobuzz.core.models.SeasonComparison
 import com.msdc.baobuzz.core.models.SeasonStats
+import com.msdc.baobuzz.presentation.components.ErrorStateCard
 import com.msdc.baobuzz.presentation.components.LoadingStateCard
 
 /**
@@ -865,6 +866,141 @@ private fun ComparisonBar(
                         ),
                         RoundedCornerShape(6.dp)
                     )
+            )
+        }
+    }
+}
+
+/**
+ * Top Scorers Comparison Card
+ */
+@Composable
+private fun TopScorersComparisonCard(
+    season1: SeasonStats,
+    season2: SeasonStats
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.08f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.02f)
+                        )
+                    )
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.15f),
+                            Color.White.copy(alpha = 0.05f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .padding(20.dp)
+        ) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "⚽", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Top Scorers",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Season 1 Top Scorer
+                TopScorerRow(
+                    season = season1.season,
+                    player = season1.topScorer,
+                    goals = season1.topScorerGoals,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Season 2 Top Scorer
+                TopScorerRow(
+                    season = season2.season,
+                    player = season2.topScorer,
+                    goals = season2.topScorerGoals,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+
+                // Winner indicator
+                if (season1.topScorerGoals != season2.topScorerGoals) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    val winner = if (season1.topScorerGoals > season2.topScorerGoals)
+                        season1.topScorer else season2.topScorer
+                    val difference = kotlin.math.abs(season1.topScorerGoals - season2.topScorerGoals)
+                    Text(
+                        text = "👑 $winner scored $difference more goal${if (difference != 1) "s" else ""}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (season1.topScorerGoals > season2.topScorerGoals)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Top Scorer Row
+ */
+@Composable
+private fun TopScorerRow(
+    season: String,
+    player: String,
+    goals: Int,
+    color: Color
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = season,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = player,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Box(
+            modifier = Modifier
+                .background(color, CircleShape)
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = "$goals goals",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
         }
     }
