@@ -2081,6 +2081,157 @@ private fun HomeLeagueStandingsCard(standings: com.msdc.baobuzz.core.models.Leag
     }
 }
 
+/**
+ * Home Features Row - New features cards (Quiz, Facts, Comparison)
+ */
+@Composable
+private fun HomeFeaturesRow(
+    onNavigateToQuiz: () -> Unit,
+    onNavigateToFacts: () -> Unit,
+    onNavigateToComparison: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Section Header
+        Row(
+            modifier = Modifier.padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "🎯", style = MaterialTheme.typography.headlineSmall)
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "New Features",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        // Features Cards Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Quiz Card
+            FeatureCard(
+                modifier = Modifier.weight(1f),
+                icon = "🧠",
+                title = "Quiz",
+                description = "Test your knowledge",
+                color = MaterialTheme.colorScheme.primary,
+                onClick = onNavigateToQuiz
+            )
+
+            // Facts Card
+            FeatureCard(
+                modifier = Modifier.weight(1f),
+                icon = "📚",
+                title = "Facts",
+                description = "Historical records",
+                color = MaterialTheme.colorScheme.secondary,
+                onClick = onNavigateToFacts
+            )
+        }
+
+        // Comparison Card (Full width)
+        FeatureCard(
+            modifier = Modifier.fillMaxWidth(),
+            icon = "🔄",
+            title = "Season Comparison",
+            description = "Compare seasons side-by-side",
+            color = MaterialTheme.colorScheme.tertiary,
+            onClick = onNavigateToComparison
+        )
+    }
+}
+
+/**
+ * Feature Card - Individual feature card with glassmorphic design
+ */
+@Composable
+private fun FeatureCard(
+    modifier: Modifier = Modifier,
+    icon: String,
+    title: String,
+    description: String,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier,
+        onClick = onClick,
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            color.copy(alpha = 0.12f),
+                            color.copy(alpha = 0.04f)
+                        )
+                    )
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            color.copy(alpha = 0.3f),
+                            color.copy(alpha = 0.1f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .padding(16.dp)
+        ) {
+            Column {
+                // Icon with glass effect
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    color.copy(alpha = 0.2f),
+                                    Color.Transparent
+                                )
+                            ),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = icon,
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
 // Helper function to format fixture dates
 private fun formatFixtureDate(dateTime: String): String {
     return try {
