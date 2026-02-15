@@ -4,7 +4,7 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id ("com.google.devtools.ksp")
+    id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20"
     id("dagger.hilt.android.plugin")
 }
@@ -29,13 +29,22 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Add API keys from local.properties
-        buildConfigField("String", "FOOTBALL_API_KEY", "\"${localProperties.getProperty("API_KEY") ?: ""}\"")
-        buildConfigField("String", "FOOTBALL_DATA_API_KEY", "\"${localProperties.getProperty("FOOTBALL_DATA_API_KEY") ?: ""}\"")
+        buildConfigField(
+            "String",
+            "FOOTBALL_API_KEY",
+            "\"${localProperties.getProperty("API_KEY") ?: ""}\""
+        )
+        buildConfigField(
+            "String",
+            "FOOTBALL_DATA_API_KEY",
+            "\"${localProperties.getProperty("FOOTBALL_DATA_API_KEY") ?: ""}\""
+        )
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
