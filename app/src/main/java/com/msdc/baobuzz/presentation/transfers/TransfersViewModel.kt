@@ -7,6 +7,7 @@ import com.msdc.baobuzz.core.models.TransferDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -14,18 +15,25 @@ import javax.inject.Inject
 class TransfersViewModel @Inject constructor(private val repository: FootballRepository) :
     ViewModel() {
 
-    private val _transfers = MutableStateFlow<List<TransferDetails>>(emptyList())
-    val transfers: StateFlow<List<TransferDetails>> = _transfers
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    private val _uiState = MutableStateFlow<TransfersUiState>(TransfersUiState.Idle)
+    val uiState: StateFlow<TransfersUiState> = _uiState.asStateFlow()
 
     fun getTransfers(teamId: Int) {
         viewModelScope.launch {
-            _isLoading.value = true
-            val result = repository.getTransfersByTeam(teamId)
-            _transfers.value = result
-            _isLoading.value = false
+            _uiState.value = TransfersUiState.Loading
+            try {
+                val result = repository.getTransfersByTeam(teamId)
+                _uiState.value = TransfersUiState.Success(result)
+            } catch (e: Exception) {
+                _uiState.value = TransfersUiState.Error(e.message ?: "Failed to load transfers")
+            }
         }
     }
+}
+
+sealed class TransfersUiState {
+    object Idle : TransfersUiState()
+    object Loading : TransfersUiState()
+    data class Success(val transfers: List<TransferDetails>) : TransfersUiState()
+    data class Error(val message: String) : TransfersUiState()
 }
