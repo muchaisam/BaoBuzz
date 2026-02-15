@@ -15,18 +15,24 @@ interface CacheDao {
         currentTime: Long = System.currentTimeMillis()
     ): CacheEntity?
 
+    @Query("SELECT * FROM football_cache WHERE cacheKey = :key")
+    suspend fun getCacheEntryIgnoringExpiry(key: String): CacheEntity?
+
     @Query("SELECT * FROM football_cache WHERE dataType = :dataType AND lastUpdated + expiryTime > :currentTime")
     suspend fun getCacheEntriesByType(
         dataType: String,
         currentTime: Long = System.currentTimeMillis()
     ): List<CacheEntity>
 
-    @Query("SELECT * FROM football_cache WHERE dataType = :dataType AND leagueIds LIKE '%' || :leagueId || '%' AND lastUpdated + expiryTime > :currentTime")
+    @Query("SELECT * FROM football_cache WHERE dataType = :dataType AND leagueIds = :leagueId AND lastUpdated + expiryTime > :currentTime")
     suspend fun getCacheEntriesByLeague(
         dataType: String,
-        leagueId: Int,
+        leagueId: String,
         currentTime: Long = System.currentTimeMillis()
     ): List<CacheEntity>
+
+    @Query("SELECT * FROM football_cache WHERE leagueIds = :leagueId")
+    suspend fun getCacheEntriesByLeagueId(leagueId: String): List<CacheEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCacheEntry(cacheEntry: CacheEntity)
